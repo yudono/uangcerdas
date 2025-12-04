@@ -20,7 +20,8 @@ export default function LoginPage() {
     });
 
     if (result?.error) {
-      setError(result.error);
+      // setError(result.error);
+      setError(`Email or password invalid`);
     } else if (result?.url) {
       window.location.href = result.url;
     }

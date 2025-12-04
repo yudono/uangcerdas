@@ -173,7 +173,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 </div>
               </div>
               <button
-                onClick={() => signOut()}
+                onClick={() => signOut({ callbackUrl: "/", redirect: true })}
                 className="w-full flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-500 hover:bg-red-50 hover:text-red-600 transition-colors"
               >
                 <LogOut size={16} /> Keluar
