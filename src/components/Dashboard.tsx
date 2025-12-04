@@ -1,4 +1,4 @@
-import React, { ReactNode } from "react";
+import React, { ReactNode, useEffect, useRef } from "react";
 import {
   LayoutDashboard,
   BellRing,
@@ -67,11 +67,28 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const router = useRouter();
   const { data: session } = useSession();
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsProfileDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropdownRef]);
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans">
       {/* Sidebar Desktop */}
-      <aside className="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 h-screen fixed overflow-y-auto z-20 shadow-sm">
+      <aside className="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 h-screen fixed z-20 shadow-sm">
         <div className="p-6 border-b border-slate-100">
           <div className="flex items-center gap-2">
             <div className="bg-emerald-600 p-1.5 rounded-lg">
@@ -83,7 +100,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           </div>
         </div>
 
-        <nav className="flex-1 p-4 space-y-1">
+        <nav className="flex-1 p-4 space-y-1 overflow-x-hidden overflow-y-auto">
           <p className="px-4 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 mt-2">
             Menu Utama
           </p>
@@ -108,7 +125,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             <button
               key={item.id}
               onClick={() => router.push(item.path)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+              className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
                 router.pathname === item.path
                   ? "bg-emerald-50 text-emerald-700 shadow-sm border border-emerald-100"
                   : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
@@ -119,7 +136,10 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           ))}
         </nav>
 
-        <div className="p-4 border-t border-slate-100 relative">
+        <div
+          className="p-4 border-t border-slate-100 relative"
+          ref={dropdownRef}
+        >
           <div
             className="flex items-center gap-3 px-2 py-2 hover:bg-slate-50 cursor-pointer rounded-lg"
             onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
@@ -138,12 +158,19 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           </div>
 
           {isProfileDropdownOpen && (
-            <div className="absolute bottom-full left-0 mb-2 w-full bg-white border border-slate-200 rounded-xl shadow-lg py-2 z-30">
-              <div className="px-4 py-2 text-sm text-slate-700 border-b border-slate-100">
-                <p className="font-bold">{session?.user?.name || "Pengguna"}</p>
-                <p className="text-slate-500 text-xs">
-                  {session?.user?.email || "Tidak ada email"}
-                </p>
+            <div className="absolute bottom-0 left-full mb-2 w-full bg-white border border-slate-200 rounded-xl shadow-lg py-2 z-30">
+              <div className="flex items-center gap-3 px-2 py-2 hover:bg-slate-50 cursor-pointer rounded-lg">
+                <div className="w-10 h-10 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center font-bold text-emerald-700 shadow-sm">
+                  {session?.user?.name ? session.user.name.charAt(0) : "U"}
+                </div>
+                <div className="text-sm text-slate-700 border-b border-slate-100">
+                  <p className="font-bold">
+                    {session?.user?.name || "Pengguna"}
+                  </p>
+                  <p className="text-slate-500 text-xs">
+                    {session?.user?.email || "Tidak ada email"}
+                  </p>
+                </div>
               </div>
               <button
                 onClick={() => signOut()}

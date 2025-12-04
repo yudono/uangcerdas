@@ -509,6 +509,7 @@ __turbopack_context__.s([
     ()=>DashboardLayout
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/react/jsx-dev-runtime.js [client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/react/index.js [client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$layout$2d$dashboard$2e$js__$5b$client$5d$__$28$ecmascript$29$__$3c$export__default__as__LayoutDashboard$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/layout-dashboard.js [client] (ecmascript) <export default as LayoutDashboard>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$bell$2d$ring$2e$js__$5b$client$5d$__$28$ecmascript$29$__$3c$export__default__as__BellRing$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/bell-ring.js [client] (ecmascript) <export default as BellRing>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chart$2d$pie$2e$js__$5b$client$5d$__$28$ecmascript$29$__$3c$export__default__as__PieChart$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/chart-pie.js [client] (ecmascript) <export default as PieChart>");
@@ -518,9 +519,9 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$re
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$receipt$2e$js__$5b$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Receipt$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/receipt.js [client] (ecmascript) <export default as Receipt>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$auth$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next-auth/react/index.js [client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$router$2e$js__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/router.js [client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/react/index.js [client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
+;
 ;
 ;
 ;
@@ -564,11 +565,31 @@ const DashboardLayout = ({ children })=>{
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$router$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useRouter"])();
     const { data: session } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$auth$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useSession"])();
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useState"])(false);
+    const dropdownRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useRef"])(null);
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "DashboardLayout.useEffect": ()=>{
+            const handleClickOutside = {
+                "DashboardLayout.useEffect.handleClickOutside": (event)=>{
+                    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                        setIsProfileDropdownOpen(false);
+                    }
+                }
+            }["DashboardLayout.useEffect.handleClickOutside"];
+            document.addEventListener("mousedown", handleClickOutside);
+            return ({
+                "DashboardLayout.useEffect": ()=>{
+                    document.removeEventListener("mousedown", handleClickOutside);
+                }
+            })["DashboardLayout.useEffect"];
+        }
+    }["DashboardLayout.useEffect"], [
+        dropdownRef
+    ]);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans",
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("aside", {
-                className: "hidden md:flex flex-col w-64 bg-white border-r border-slate-200 h-screen fixed overflow-y-auto z-20 shadow-sm",
+                className: "hidden md:flex flex-col w-64 bg-white border-r border-slate-200 h-screen fixed z-20 shadow-sm",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "p-6 border-b border-slate-100",
@@ -581,12 +602,12 @@ const DashboardLayout = ({ children })=>{
                                         className: "w-6 h-6 text-white"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/Dashboard.tsx",
-                                        lineNumber: 78,
+                                        lineNumber: 95,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0))
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/Dashboard.tsx",
-                                    lineNumber: 77,
+                                    lineNumber: 94,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -594,61 +615,34 @@ const DashboardLayout = ({ children })=>{
                                     children: "UangCerdas"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/Dashboard.tsx",
-                                    lineNumber: 80,
+                                    lineNumber: 97,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/Dashboard.tsx",
-                            lineNumber: 76,
+                            lineNumber: 93,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     }, void 0, false, {
                         fileName: "[project]/src/components/Dashboard.tsx",
-                        lineNumber: 75,
+                        lineNumber: 92,
                         columnNumber: 9
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("nav", {
-                        className: "flex-1 p-4 space-y-1",
+                        className: "flex-1 p-4 space-y-1 overflow-x-hidden overflow-y-auto",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                 className: "px-4 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 mt-2",
                                 children: "Menu Utama"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Dashboard.tsx",
-                                lineNumber: 87,
+                                lineNumber: 104,
                                 columnNumber: 11
                             }, ("TURBOPACK compile-time value", void 0)),
                             sidebarItems.map((item)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                     onClick: ()=>router.push(item.path),
                                     className: `cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${router.pathname === item.path ? "bg-emerald-50 text-emerald-700 shadow-sm border border-emerald-100" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"}`,
-                                    children: [
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(item.icon, {
-                                            size: 20
-                                        }, void 0, false, {
-                                            fileName: "[project]/src/components/Dashboard.tsx",
-                                            lineNumber: 100,
-                                            columnNumber: 15
-                                        }, ("TURBOPACK compile-time value", void 0)),
-                                        " ",
-                                        item.label
-                                    ]
-                                }, item.id, true, {
-                                    fileName: "[project]/src/components/Dashboard.tsx",
-                                    lineNumber: 91,
-                                    columnNumber: 13
-                                }, ("TURBOPACK compile-time value", void 0))),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                className: "px-4 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 mt-8",
-                                children: "Preferensi"
-                            }, void 0, false, {
-                                fileName: "[project]/src/components/Dashboard.tsx",
-                                lineNumber: 104,
-                                columnNumber: 11
-                            }, ("TURBOPACK compile-time value", void 0)),
-                            preferenceItems.map((item)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                    onClick: ()=>router.push(item.path),
-                                    className: `w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${router.pathname === item.path ? "bg-emerald-50 text-emerald-700 shadow-sm border border-emerald-100" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"}`,
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(item.icon, {
                                             size: 20
@@ -664,15 +658,43 @@ const DashboardLayout = ({ children })=>{
                                     fileName: "[project]/src/components/Dashboard.tsx",
                                     lineNumber: 108,
                                     columnNumber: 13
+                                }, ("TURBOPACK compile-time value", void 0))),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                className: "px-4 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 mt-8",
+                                children: "Preferensi"
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/Dashboard.tsx",
+                                lineNumber: 121,
+                                columnNumber: 11
+                            }, ("TURBOPACK compile-time value", void 0)),
+                            preferenceItems.map((item)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                    onClick: ()=>router.push(item.path),
+                                    className: `cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${router.pathname === item.path ? "bg-emerald-50 text-emerald-700 shadow-sm border border-emerald-100" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"}`,
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(item.icon, {
+                                            size: 20
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/Dashboard.tsx",
+                                            lineNumber: 134,
+                                            columnNumber: 15
+                                        }, ("TURBOPACK compile-time value", void 0)),
+                                        " ",
+                                        item.label
+                                    ]
+                                }, item.id, true, {
+                                    fileName: "[project]/src/components/Dashboard.tsx",
+                                    lineNumber: 125,
+                                    columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/Dashboard.tsx",
-                        lineNumber: 86,
+                        lineNumber: 103,
                         columnNumber: 9
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "p-4 border-t border-slate-100 relative",
+                        ref: dropdownRef,
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 className: "flex items-center gap-3 px-2 py-2 hover:bg-slate-50 cursor-pointer rounded-lg",
@@ -683,7 +705,7 @@ const DashboardLayout = ({ children })=>{
                                         children: session?.user?.name ? session.user.name.charAt(0) : "U"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/Dashboard.tsx",
-                                        lineNumber: 127,
+                                        lineNumber: 147,
                                         columnNumber: 13
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -694,7 +716,7 @@ const DashboardLayout = ({ children })=>{
                                                 children: session?.user?.name || "Pengguna"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/Dashboard.tsx",
-                                                lineNumber: 131,
+                                                lineNumber: 151,
                                                 columnNumber: 15
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -702,47 +724,64 @@ const DashboardLayout = ({ children })=>{
                                                 children: session?.user?.email || "Tidak ada email"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/Dashboard.tsx",
-                                                lineNumber: 134,
+                                                lineNumber: 154,
                                                 columnNumber: 15
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/Dashboard.tsx",
-                                        lineNumber: 130,
+                                        lineNumber: 150,
                                         columnNumber: 13
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/Dashboard.tsx",
-                                lineNumber: 123,
+                                lineNumber: 143,
                                 columnNumber: 11
                             }, ("TURBOPACK compile-time value", void 0)),
                             isProfileDropdownOpen && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "absolute bottom-full left-0 mb-2 w-full bg-white border border-slate-200 rounded-xl shadow-lg py-2 z-30",
+                                className: "absolute bottom-0 left-full mb-2 w-full bg-white border border-slate-200 rounded-xl shadow-lg py-2 z-30",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "px-4 py-2 text-sm text-slate-700 border-b border-slate-100",
+                                        className: "flex items-center gap-3 px-2 py-2 hover:bg-slate-50 cursor-pointer rounded-lg",
                                         children: [
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                className: "font-bold",
-                                                children: session?.user?.name || "Pengguna"
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "w-10 h-10 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center font-bold text-emerald-700 shadow-sm",
+                                                children: session?.user?.name ? session.user.name.charAt(0) : "U"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/Dashboard.tsx",
-                                                lineNumber: 143,
+                                                lineNumber: 163,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                className: "text-slate-500 text-xs",
-                                                children: session?.user?.email || "Tidak ada email"
-                                            }, void 0, false, {
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "text-sm text-slate-700 border-b border-slate-100",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                        className: "font-bold",
+                                                        children: session?.user?.name || "Pengguna"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/src/components/Dashboard.tsx",
+                                                        lineNumber: 167,
+                                                        columnNumber: 19
+                                                    }, ("TURBOPACK compile-time value", void 0)),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                        className: "text-slate-500 text-xs",
+                                                        children: session?.user?.email || "Tidak ada email"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/src/components/Dashboard.tsx",
+                                                        lineNumber: 170,
+                                                        columnNumber: 19
+                                                    }, ("TURBOPACK compile-time value", void 0))
+                                                ]
+                                            }, void 0, true, {
                                                 fileName: "[project]/src/components/Dashboard.tsx",
-                                                lineNumber: 144,
+                                                lineNumber: 166,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/Dashboard.tsx",
-                                        lineNumber: 142,
+                                        lineNumber: 162,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -753,32 +792,32 @@ const DashboardLayout = ({ children })=>{
                                                 size: 16
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/Dashboard.tsx",
-                                                lineNumber: 152,
+                                                lineNumber: 179,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             " Keluar"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/Dashboard.tsx",
-                                        lineNumber: 148,
+                                        lineNumber: 175,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/Dashboard.tsx",
-                                lineNumber: 141,
+                                lineNumber: 161,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/Dashboard.tsx",
-                        lineNumber: 122,
+                        lineNumber: 139,
                         columnNumber: 9
                     }, ("TURBOPACK compile-time value", void 0))
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/Dashboard.tsx",
-                lineNumber: 74,
+                lineNumber: 91,
                 columnNumber: 7
             }, ("TURBOPACK compile-time value", void 0)),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("main", {
@@ -796,12 +835,12 @@ const DashboardLayout = ({ children })=>{
                                             className: "w-5 h-5 text-white"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/Dashboard.tsx",
-                                            lineNumber: 165,
+                                            lineNumber: 192,
                                             columnNumber: 15
                                         }, ("TURBOPACK compile-time value", void 0))
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/Dashboard.tsx",
-                                        lineNumber: 164,
+                                        lineNumber: 191,
                                         columnNumber: 13
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -809,13 +848,13 @@ const DashboardLayout = ({ children })=>{
                                         children: "UangCerdas"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/Dashboard.tsx",
-                                        lineNumber: 167,
+                                        lineNumber: 194,
                                         columnNumber: 13
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/Dashboard.tsx",
-                                lineNumber: 163,
+                                lineNumber: 190,
                                 columnNumber: 11
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -825,18 +864,18 @@ const DashboardLayout = ({ children })=>{
                                     className: "text-slate-500"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/Dashboard.tsx",
-                                    lineNumber: 170,
+                                    lineNumber: 197,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Dashboard.tsx",
-                                lineNumber: 169,
+                                lineNumber: 196,
                                 columnNumber: 11
                             }, ("TURBOPACK compile-time value", void 0))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/Dashboard.tsx",
-                        lineNumber: 162,
+                        lineNumber: 189,
                         columnNumber: 9
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -847,12 +886,12 @@ const DashboardLayout = ({ children })=>{
                                 children: item.label
                             }, item.id, false, {
                                 fileName: "[project]/src/components/Dashboard.tsx",
-                                lineNumber: 177,
+                                lineNumber: 204,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0)))
                     }, void 0, false, {
                         fileName: "[project]/src/components/Dashboard.tsx",
-                        lineNumber: 175,
+                        lineNumber: 202,
                         columnNumber: 9
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -860,23 +899,23 @@ const DashboardLayout = ({ children })=>{
                         children: children
                     }, void 0, false, {
                         fileName: "[project]/src/components/Dashboard.tsx",
-                        lineNumber: 192,
+                        lineNumber: 219,
                         columnNumber: 9
                     }, ("TURBOPACK compile-time value", void 0))
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/Dashboard.tsx",
-                lineNumber: 160,
+                lineNumber: 187,
                 columnNumber: 7
             }, ("TURBOPACK compile-time value", void 0))
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/Dashboard.tsx",
-        lineNumber: 72,
+        lineNumber: 89,
         columnNumber: 5
     }, ("TURBOPACK compile-time value", void 0));
 };
-_s(DashboardLayout, "SVlF/sWPLlSoU4msMclKssxspa4=", false, function() {
+_s(DashboardLayout, "gk/1k/QueuE7xgk61UzJxO9zshY=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$router$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useRouter"],
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$auth$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["useSession"]
