@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 16, "column": 0}, "map": {"version":3,"sources":["file:///Users/yudonoputro/Documents/projects/uangcerdas-landing-page/src/pages/_app.tsx"],"sourcesContent":["import { SessionProvider } from \"next-auth/react\";\nimport type { AppProps } from \"next/app\";\nimport \"../styles/globals.css\";\n\nexport default function App({\n  Component,\n  pageProps: { session, ...pageProps },\n}: AppProps) {\n  return (\n    <SessionProvider session={session}>\n      <Component {...pageProps} />\n    </SessionProvider>\n  );\n}\n"],"names":[],"mappings":";;;;;AAAA;;;;AAIe,SAAS,IAAI,EAC1B,SAAS,EACT,WAAW,EAAE,OAAO,EAAE,GAAG,WAAW,EAC3B;IACT,qBACE,qKAAC,sJAAe;QAAC,SAAS;kBACxB,cAAA,qKAAC;YAAW,GAAG,SAAS;;;;;;;;;;;AAG9B"}}]
+}

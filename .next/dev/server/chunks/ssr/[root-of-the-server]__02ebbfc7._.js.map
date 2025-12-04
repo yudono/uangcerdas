@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///Users/yudonoputro/Documents/projects/uangcerdas-landing-page/pages/login.tsx"],"sourcesContent":["import { signIn } from \"next-auth/react\";\n\nexport default function LoginPage() {\n  return (\n    <div>\n      <h1>Login</h1>\n      <button onClick={() => signIn(\"google\")}>Sign in with Google</button>\n    </div>\n  );\n}\n"],"names":[],"mappings":";;;;;AAAA;;;AAEe,SAAS;IACtB,qBACE,qKAAC;;0BACC,qKAAC;0BAAG;;;;;;0BACJ,qKAAC;gBAAO,SAAS,IAAM,IAAA,6IAAM,EAAC;0BAAW;;;;;;;;;;;;AAG/C"}}]
+}
