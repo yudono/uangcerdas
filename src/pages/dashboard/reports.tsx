@@ -25,23 +25,61 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { z } from "zod";
+
+interface CashflowData {
+  name: string;
+  val: number;
+  color: string;
+  isPrediction?: boolean;
+}
+
+const fetchCashflowPrediction = async (): Promise<CashflowData[]> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve([
+        { name: "Sep", val: 32000, color: "#94a3b8" },
+        { name: "Okt", val: 42500, color: "#10b981" },
+        {
+          name: "Nov (Est)",
+          val: 51000,
+          color: "#34d399",
+          isPrediction: true,
+        },
+      ]);
+    }, 1000);
+  });
+};
 
 export default function DashboardAlertPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  if (status === "loading") {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading...
-      </div>
-    );
-  }
+  const { data: cashflowData, isLoading: isLoadingCashflow } = useQuery<
+    CashflowData[]
+  >({
+    queryKey: ["cashflowPrediction"],
+    queryFn: fetchCashflowPrediction,
+  });
 
-  if (status === "unauthenticated") {
-    router.push("/login");
-    return null;
-  }
+  const downloadReportMutation = useMutation({
+    mutationFn: async (reportType: "excel" | "pdf") => {
+      // Simulate API call for downloading report
+      return new Promise<void>((resolve) => {
+        setTimeout(() => {
+          console.log(`Downloading ${reportType} report`);
+          resolve();
+        }, 1000);
+      });
+    },
+    onSuccess: (reportType) => {
+      alert(`Laporan ${reportType} berhasil diunduh!`);
+    },
+    onError: (error) => {
+      alert(`Gagal mengunduh laporan: ${error.message}`);
+    },
+  });
 
   return (
     <DashboardLayout>
@@ -60,15 +98,21 @@ export default function DashboardAlertPage() {
               variant="outline"
               size="sm"
               className="flex items-center gap-2"
+              onClick={() => downloadReportMutation.mutate("excel")}
+              disabled={downloadReportMutation.isPending}
             >
-              <Download size={16} /> Excel
+              <Download size={16} />{" "}
+              {downloadReportMutation.isPending ? "Mengunduh..." : "Excel"}
             </Button>
             <Button
               variant="outline"
               size="sm"
               className="flex items-center gap-2"
+              onClick={() => downloadReportMutation.mutate("pdf")}
+              disabled={downloadReportMutation.isPending}
             >
-              <Download size={16} /> PDF
+              <Download size={16} />{" "}
+              {downloadReportMutation.isPending ? "Mengunduh..." : "PDF"}
             </Button>
           </div>
         </div>
@@ -91,56 +135,49 @@ export default function DashboardAlertPage() {
             </div>
 
             <div className="h-64 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={[
-                    { name: "Sep", val: 32000, color: "#94a3b8" },
-                    { name: "Okt", val: 42500, color: "#10b981" },
-                    {
-                      name: "Nov (Est)",
-                      val: 51000,
-                      color: "#34d399",
-                      isPrediction: true,
-                    },
-                  ]}
-                >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                  <YAxis
-                    tickFormatter={(val) => `${val / 1000}jt`}
-                    fontSize={12}
-                  />
-                  <Tooltip
-                    cursor={{ fill: "transparent" }}
-                    formatter={(val) => `Rp ${Number(val).toLocaleString()}`}
-                  />
-                  <Bar dataKey="val" radius={[6, 6, 0, 0]} barSize={60}>
-                    {[0, 1, 2].map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={
-                          index === 2
-                            ? "url(#striped-pattern)"
-                            : index === 1
-                            ? "#10b981"
-                            : "#cbd5e1"
-                        }
-                      />
-                    ))}
-                  </Bar>
-                  <defs>
-                    <pattern
-                      id="striped-pattern"
-                      patternUnits="userSpaceOnUse"
-                      width="8"
-                      height="8"
-                      transform="rotate(45)"
-                    >
-                      <rect width="4" height="8" fill="#d1fae5" />
-                    </pattern>
-                  </defs>
-                </BarChart>
-              </ResponsiveContainer>
+              {isLoadingCashflow ? (
+                <div className="flex items-center justify-center h-full text-slate-500">
+                  Memuat prediksi cashflow...
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={cashflowData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                    <YAxis
+                      tickFormatter={(val) => `${val / 1000}jt`}
+                      fontSize={12}
+                    />
+                    <Tooltip
+                      cursor={{ fill: "transparent" }}
+                      formatter={(val) => `Rp ${Number(val).toLocaleString()}`}
+                    />
+                    <Bar dataKey="val" radius={[6, 6, 0, 0]} barSize={60}>
+                      {cashflowData?.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={
+                            entry.isPrediction
+                              ? "url(#striped-pattern)"
+                              : entry.color
+                          }
+                        />
+                      ))}
+                    </Bar>
+                    <defs>
+                      <pattern
+                        id="striped-pattern"
+                        patternUnits="userSpaceOnUse"
+                        width="8"
+                        height="8"
+                        transform="rotate(45)"
+                      >
+                        <rect width="4" height="8" fill="#d1fae5" />
+                      </pattern>
+                    </defs>
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </div>
 

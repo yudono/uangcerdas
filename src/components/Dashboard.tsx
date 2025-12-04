@@ -8,6 +8,9 @@ import {
   ShieldCheck,
   Receipt,
   LucideIcon,
+  Brain,
+  ArrowRightLeft,
+  MessageSquare,
 } from "lucide-react";
 import { Button } from "./Button";
 import { signOut, useSession } from "next-auth/react";
@@ -34,14 +37,14 @@ const sidebarItems: SidebarItem[] = [
   },
   {
     id: "alerts",
-    label: "AI Guardian",
-    icon: BellRing,
+    label: "Deteksi Anomali",
+    icon: Brain,
     path: "/dashboard/alerts",
   },
   {
     id: "transactions",
     label: "Transaksi",
-    icon: Receipt,
+    icon: ArrowRightLeft,
     path: "/dashboard/transactions",
   },
   {
@@ -49,6 +52,18 @@ const sidebarItems: SidebarItem[] = [
     label: "Laporan",
     icon: PieChart,
     path: "/dashboard/reports",
+  },
+  {
+    id: "nota",
+    label: "Nota",
+    icon: Receipt,
+    path: "/dashboard/nota",
+  },
+  {
+    id: "ai-chat",
+    label: "AI Chat",
+    icon: MessageSquare,
+    path: "/dashboard/ai-chat",
   },
 ];
 

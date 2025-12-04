@@ -1,37 +1,63 @@
-import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { Button } from "../components/Button";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+
+const loginSchema = z.object({
+  email: z.string().email("Email tidak valid"),
+  password: z.string().min(1, "Password tidak boleh kosong"),
+});
+
+type LoginFormInputs = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+  } = useForm<LoginFormInputs>({
+    resolver: zodResolver(loginSchema),
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-
+  const loginUser = async (data: LoginFormInputs) => {
     const result = await signIn("credentials", {
       redirect: false,
-      email,
-      password,
+      email: data.email,
+      password: data.password,
       callbackUrl: "/dashboard",
     });
+    return result;
+  };
 
-    if (result?.error) {
-      // setError(result.error);
-      setError(`Email or password invalid`);
-    } else if (result?.url) {
-      window.location.href = result.url;
-    }
+  const { mutate, isPending } = useMutation({
+    mutationFn: loginUser,
+    onSuccess: (result) => {
+      if (result?.url) {
+        window.location.href = result.url;
+      }
+    },
+    onError: (error: any) => {
+      setError("root.serverError", {
+        type: "400",
+        message: error?.message || "Email atau password salah",
+      });
+    },
+  });
+
+  const onSubmit = async (data: LoginFormInputs) => {
+    setError("root.serverError", { type: "400", message: "" });
+    mutate(data);
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-md">
         <h1 className="text-2xl font-bold text-center mb-6">Login</h1>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
             <label
               htmlFor="email"
@@ -42,11 +68,12 @@ export default function LoginPage() {
             <input
               id="email"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
+              {...register("email")}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-full shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
             />
+            {errors.email && (
+              <p className="text-red-500 text-sm">{errors.email.message}</p>
+            )}
           </div>
           <div>
             <label
@@ -58,15 +85,20 @@ export default function LoginPage() {
             <input
               id="password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
+              {...register("password")}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-full shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
             />
+            {errors.password && (
+              <p className="text-red-500 text-sm">{errors.password.message}</p>
+            )}
           </div>
-          {error && <p className="text-red-500 text-sm">{error}</p>}
-          <Button type="submit" className="w-full">
-            Login
+          {errors.root?.serverError && (
+            <p className="text-red-500 text-sm">
+              {errors.root.serverError.message}
+            </p>
+          )}
+          <Button type="submit" className="w-full" disabled={isPending}>
+            {isPending ? "Logging in..." : "Login"}
           </Button>
         </form>
         <p className="mt-4 text-center text-sm">

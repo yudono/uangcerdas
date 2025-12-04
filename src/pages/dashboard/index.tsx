@@ -20,6 +20,7 @@ import {
 } from "recharts";
 import { useState } from "react";
 import { formatCurrency } from "../../lib/format-currency";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const chartData = [
   { name: "Sen", income: 4200, expense: 2100 },
@@ -31,100 +32,125 @@ const chartData = [
   { name: "Min", income: 6800, expense: 3900 },
 ];
 // Mock HPP Data
-const hppData: HPPData = {
-  totalRevenue: 42500000,
-  rawMaterialCost: 18500000,
-  productionCost: 5000000,
-  grossProfit: 19000000,
-  marginPercent: 44.7,
+const fetchHPPData = async (): Promise<HPPData> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({
+        totalRevenue: 42500000,
+        rawMaterialCost: 18500000,
+        productionCost: 5000000,
+        grossProfit: 19000000,
+        marginPercent: 44.7,
+      });
+    }, 500);
+  });
 };
 
-export const initialTransactions: Transaction[] = [
-  {
-    id: "TX-001",
-    date: "24 Okt 2023, 10:30",
-    desc: "Penjualan Kopi Susu (20 cup)",
-    category: "Penjualan",
-    amount: 360000,
-    type: "in",
-    source: "POS",
-    status: "completed",
-  },
-  {
-    id: "TX-002",
-    date: "24 Okt 2023, 09:15",
-    desc: "Restock Susu UHT",
-    category: "Bahan Baku",
-    amount: 850000,
-    type: "out",
-    source: "Bank",
-    status: "completed",
-  },
-  {
-    id: "TX-003",
-    date: "23 Okt 2023, 20:00",
-    desc: "Settlement QRIS",
-    category: "Pencairan",
-    amount: 2450000,
-    type: "in",
-    source: "E-Wallet",
-    status: "completed",
-  },
-  {
-    id: "TX-004",
-    date: "23 Okt 2023, 14:20",
-    desc: "Token Listrik",
-    category: "Operasional",
-    amount: 200000,
-    type: "out",
-    source: "E-Wallet",
-    status: "completed",
-  },
-  {
-    id: "TX-005",
-    date: "23 Okt 2023, 11:00",
-    desc: "Uang Tunai Kasir",
-    category: "Kas",
-    amount: 500000,
-    type: "in",
-    source: "Cash",
-    status: "completed",
-  },
-  {
-    id: "TX-006",
-    date: "22 Okt 2023, 16:45",
-    desc: "Servis Mesin Espresso",
-    category: "Maintenance",
-    amount: 1200000,
-    type: "out",
-    source: "Bank",
-    status: "pending",
-  },
-];
+const fetchTransactions = async (): Promise<Transaction[]> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve([
+        {
+          id: "TX-001",
+          date: "24 Okt 2023, 10:30",
+          desc: "Penjualan Kopi Susu (20 cup)",
+          category: "Penjualan",
+          amount: 360000,
+          type: "in",
+          source: "POS",
+          status: "completed",
+        },
+        {
+          id: "TX-002",
+          date: "24 Okt 2023, 09:15",
+          desc: "Restock Susu UHT",
+          category: "Bahan Baku",
+          amount: 850000,
+          type: "out",
+          source: "Bank",
+          status: "completed",
+        },
+        {
+          id: "TX-003",
+          date: "23 Okt 2023, 20:00",
+          desc: "Settlement QRIS",
+          category: "Pencairan",
+          amount: 2450000,
+          type: "in",
+          source: "E-Wallet",
+          status: "completed",
+        },
+        {
+          id: "TX-004",
+          date: "23 Okt 2023, 14:20",
+          desc: "Token Listrik",
+          category: "Operasional",
+          amount: 200000,
+          type: "out",
+          source: "E-Wallet",
+          status: "completed",
+        },
+        {
+          id: "TX-005",
+          date: "23 Okt 2023, 11:00",
+          desc: "Uang Tunai Kasir",
+          category: "Kas",
+          amount: 500000,
+          type: "in",
+          source: "Cash",
+          status: "completed",
+        },
+        {
+          id: "TX-006",
+          date: "22 Okt 2023, 16:45",
+          desc: "Servis Mesin Espresso",
+          category: "Maintenance",
+          amount: 1200000,
+          type: "out",
+          source: "Bank",
+          status: "pending",
+        },
+      ]);
+    }, 500);
+  });
+};
 
 export default function DashboardPage() {
-  const [transactions, setTransactions] =
-    useState<Transaction[]>(initialTransactions);
-  const [isSyncing, setIsSyncing] = useState(false);
+  const queryClient = useQueryClient();
 
-  const handleSync = () => {
-    setIsSyncing(true);
-    setTimeout(() => {
-      setIsSyncing(false);
-      // Simulate new transaction
-      const newTx: Transaction = {
-        id: `TX-NEW-${Date.now()}`,
-        date: "Baru Saja",
-        desc: "Pembayaran QRIS Masuk",
-        category: "Penjualan",
-        amount: 150000,
-        type: "in",
-        source: "E-Wallet",
-        status: "completed",
-      };
-      setTransactions([newTx, ...transactions]);
-    }, 1500);
-  };
+  const { data: transactions, isLoading: isLoadingTransactions } = useQuery<
+    Transaction[]
+  >({ queryKey: ["transactions"], queryFn: fetchTransactions });
+  const { data: hppData, isLoading: isLoadingHPPData } = useQuery<HPPData>({
+    queryKey: ["hppData"],
+    queryFn: fetchHPPData,
+  });
+
+  const syncDataMutation = useMutation({
+    mutationFn: async () => {
+      return new Promise<Transaction>((resolve) => {
+        setTimeout(() => {
+          const newTx: Transaction = {
+            id: `TX-NEW-${Date.now()}`,
+            date: "Baru Saja",
+            desc: "Pembayaran QRIS Masuk",
+            category: "Penjualan",
+            amount: 150000,
+            type: "in",
+            source: "E-Wallet",
+            status: "completed",
+          };
+          resolve(newTx);
+        }, 1500);
+      });
+    },
+    onSuccess: (newTx) => {
+      queryClient.setQueryData<Transaction[]>(["transactions"], (old) => [
+        newTx,
+        ...(old || []),
+      ]);
+    },
+  });
 
   return (
     <DashboardLayout>
@@ -148,14 +174,15 @@ export default function DashboardPage() {
             <Button
               variant="secondary"
               size="sm"
-              onClick={handleSync}
+              onClick={() => syncDataMutation.mutate()}
               className="flex items-center gap-2"
+              disabled={syncDataMutation.isPending}
             >
               <RefreshCw
                 size={16}
-                className={isSyncing ? "animate-spin" : ""}
+                className={syncDataMutation.isPending ? "animate-spin" : ""}
               />
-              {isSyncing ? "Sinkronisasi..." : "Sync Data"}
+              {syncDataMutation.isPending ? "Sinkronisasi..." : "Sync Data"}
             </Button>
           </div>
         </div>
@@ -167,7 +194,7 @@ export default function DashboardPage() {
               Total Pemasukan
             </p>
             <h3 className="text-2xl font-bold text-slate-800 mb-2">
-              {formatCurrency(hppData.totalRevenue)}
+              {hppData ? formatCurrency(hppData.totalRevenue) : "..."}
             </h3>
             <div className="flex items-center text-xs font-semibold text-emerald-600 bg-emerald-50 w-fit px-2 py-1 rounded-full">
               <TrendingUp size={14} className="mr-1" /> +12% vs bulan lalu
@@ -178,9 +205,11 @@ export default function DashboardPage() {
               Total Pengeluaran
             </p>
             <h3 className="text-2xl font-bold text-slate-800 mb-2">
-              {formatCurrency(
-                hppData.rawMaterialCost + hppData.productionCost + 4700000
-              )}
+              {hppData
+                ? formatCurrency(
+                    hppData.rawMaterialCost + hppData.productionCost + 4700000
+                  )
+                : "..."}
             </h3>
             <div className="flex items-center text-xs font-semibold text-red-600 bg-red-50 w-fit px-2 py-1 rounded-full">
               <TrendingDown size={14} className="mr-1" /> +5% vs bulan lalu
@@ -218,7 +247,7 @@ export default function DashboardPage() {
               <div className="flex justify-between text-sm font-medium mb-1">
                 <span className="text-slate-600">Pendapatan (Revenue)</span>
                 <span className="text-slate-900">
-                  {formatCurrency(hppData.totalRevenue)}
+                  {hppData ? formatCurrency(hppData.totalRevenue) : "..."}
                 </span>
               </div>
               <div className="w-full bg-emerald-100 rounded-full h-4"></div>
@@ -228,7 +257,9 @@ export default function DashboardPage() {
                   <div className="flex justify-between text-xs mb-1">
                     <span className="text-slate-500">Biaya Bahan Baku</span>
                     <span className="text-slate-700 font-semibold">
-                      {formatCurrency(hppData.rawMaterialCost)}
+                      {hppData
+                        ? formatCurrency(hppData.rawMaterialCost)
+                        : "..."}
                     </span>
                   </div>
                   <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
@@ -242,7 +273,7 @@ export default function DashboardPage() {
                   <div className="flex justify-between text-xs mb-1">
                     <span className="text-slate-500">Biaya Produksi Lain</span>
                     <span className="text-slate-700 font-semibold">
-                      {formatCurrency(hppData.productionCost)}
+                      {hppData ? formatCurrency(hppData.productionCost) : "..."}
                     </span>
                   </div>
                   <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
@@ -260,17 +291,17 @@ export default function DashboardPage() {
                     Margin Kotor (Gross Profit)
                   </span>
                   <span className="text-emerald-700">
-                    {formatCurrency(hppData.grossProfit)}
+                    {hppData ? formatCurrency(hppData.grossProfit) : "..."}
                   </span>
                 </div>
                 <div className="w-full bg-slate-100 rounded-full h-4 overflow-hidden">
                   <div
                     className="bg-emerald-500 h-4 rounded-full"
-                    style={{ width: `${hppData.marginPercent}%` }}
+                    style={{ width: `${hppData ? hppData.marginPercent : 0}%` }}
                   ></div>
                 </div>
                 <p className="text-right text-xs text-emerald-600 mt-1 font-bold">
-                  {hppData.marginPercent}% Margin
+                  {hppData ? `${hppData.marginPercent}% Margin` : "..."}
                 </p>
               </div>
             </div>

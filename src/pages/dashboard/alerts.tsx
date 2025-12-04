@@ -9,97 +9,151 @@ import {
   CheckCircle2,
   PlayCircle,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { formatCurrency } from "../../lib/format-currency";
-
-const initialAlerts: AIAlert[] = [
-  {
-    id: "1",
-    severity: "high",
-    title: "Lonjakan Tagihan Listrik",
-    description: "Tagihan listrik terdeteksi 40% lebih tinggi dari rata-rata.",
-    date: "Hari ini, 09:00",
-    amount: "-Rp 850.000",
-    recommendation:
-      "Analisis menunjukkan penggunaan tinggi di jam 22:00-06:00. Kemungkinan AC gudang lupa dimatikan.",
-    suggestedActions: [
-      "Cek Timer AC Gudang",
-      "Briefing Staff Malam",
-      "Set Reminder Otomatis",
-    ],
-    status: "new",
-    impact: "Hemat Rp 350rb/bln",
-  },
-  {
-    id: "2",
-    severity: "medium",
-    title: "Supplier Overcharge",
-    description: 'Harga "Biji Kopi Arabica" Supplier A naik 12% minggu ini.',
-    date: "Kemarin, 14:20",
-    amount: "Selisih Rp 150.000",
-    recommendation:
-      "Supplier B menawarkan harga lebih murah dengan kualitas setara.",
-    suggestedActions: [
-      "Hubungi Supplier A (Nego)",
-      "Lihat Kontak Supplier B",
-      "Order Test Batch Supplier B",
-    ],
-    status: "new",
-    impact: "Potensi Hemat 12%",
-  },
-  {
-    id: "3",
-    severity: "low",
-    title: "Pengeluaran Rutin Naik",
-    description: "Biaya packaging naik 5% bulan ini.",
-    date: "22 Okt, 10:00",
-    recommendation: "Coba beli grosir dalam jumlah lebih besar untuk diskon.",
-    suggestedActions: ["Cek Stok Gudang", "Buat PO Bulk Order"],
-    status: "in_progress",
-    userNotes: "Sedang cek kapasitas gudang sebelum order banyak.",
-    impact: "Hemat Rp 50rb/trx",
-  },
-];
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function DashboardAlertPage() {
+  const queryClient = useQueryClient();
   const [expandedAlert, setExpandedAlert] = useState<string | null>(null);
 
-  const [alerts, setAlerts] = useState<AIAlert[]>(initialAlerts);
+  const noteSchema = z.object({
+    note: z.string().optional(),
+  });
 
-  // Alert Filtering
+  type NoteFormInputs = z.infer<typeof noteSchema>;
+
+  const fetchAlerts = async (): Promise<AIAlert[]> => {
+    // Simulate API call
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve([
+          {
+            id: "1",
+            severity: "high",
+            title: "Lonjakan Tagihan Listrik",
+            description:
+              "Tagihan listrik terdeteksi 40% lebih tinggi dari rata-rata.",
+            date: "Hari ini, 09:00",
+            amount: "-Rp 850.000",
+            recommendation:
+              "Analisis menunjukkan penggunaan tinggi di jam 22:00-06:00. Kemungkinan AC gudang lupa dimatikan.",
+            suggestedActions: [
+              "Cek Timer AC Gudang",
+              "Briefing Staff Malam",
+              "Set Reminder Otomatis",
+            ],
+            status: "new",
+            impact: "Hemat Rp 350rb/bln",
+          },
+          {
+            id: "2",
+            severity: "medium",
+            title: "Supplier Overcharge",
+            description:
+              'Harga "Biji Kopi Arabica" Supplier A naik 12% minggu ini.',
+            date: "Kemarin, 14:20",
+            amount: "Selisih Rp 150.000",
+            recommendation:
+              "Supplier B menawarkan harga lebih murah dengan kualitas setara.",
+            suggestedActions: [
+              "Hubungi Supplier A (Nego)",
+              "Lihat Kontak Supplier B",
+              "Order Test Batch Supplier B",
+            ],
+            status: "new",
+            impact: "Potensi Hemat 12%",
+          },
+          {
+            id: "3",
+            severity: "low",
+            title: "Pengeluaran Rutin Naik",
+            description: "Biaya packaging naik 5% bulan ini.",
+            date: "22 Okt, 10:00",
+            recommendation:
+              "Coba beli grosir dalam jumlah lebih besar untuk diskon.",
+            suggestedActions: ["Cek Stok Gudang", "Buat PO Bulk Order"],
+            status: "in_progress",
+            userNotes: "Sedang cek kapasitas gudang sebelum order banyak.",
+            impact: "Hemat Rp 50rb/trx",
+          },
+        ]);
+      }, 500);
+    });
+  };
+
+  const {
+    data: alerts,
+    isLoading,
+    isError,
+  } = useQuery<AIAlert[]>({ queryKey: ["alerts"], queryFn: fetchAlerts });
+
+  const updateAlertStatusMutation = useMutation({
+    mutationFn: async ({
+      id,
+      status,
+    }: {
+      id: string;
+      status: "in_progress" | "resolved";
+    }) => {
+      // Simulate API call
+      return new Promise<AIAlert>((resolve) => {
+        setTimeout(() => {
+          const updatedAlerts = alerts?.map((a) =>
+            a.id === id ? { ...a, status } : a
+          );
+          queryClient.setQueryData(["alerts"], updatedAlerts);
+          resolve(updatedAlerts?.find((a) => a.id === id)!);
+        }, 300);
+      });
+    },
+  });
+
+  const updateAlertNoteMutation = useMutation({
+    mutationFn: async ({ id, note }: { id: string; note: string }) => {
+      // Simulate API call
+      return new Promise<AIAlert>((resolve) => {
+        setTimeout(() => {
+          const updatedAlerts = alerts?.map((a) =>
+            a.id === id ? { ...a, userNotes: note } : a
+          );
+          queryClient.setQueryData(["alerts"], updatedAlerts);
+          resolve(updatedAlerts?.find((a) => a.id === id)!);
+        }, 300);
+      });
+    },
+  });
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<NoteFormInputs>({
+    resolver: zodResolver(noteSchema),
+  });
+
   const [alertFilter, setAlertFilter] = useState<"all" | "new" | "history">(
     "new"
   );
 
-  // Filter alerts
-  const displayedAlerts = alerts.filter((a) => {
-    if (alertFilter === "new") return a.status === "new";
-    if (alertFilter === "history") return a.status === "resolved";
-    return true; // 'all' - actually used for mixed, but let's stick to simple logic
-  });
-  // Include 'in_progress' in 'new' view for simplicity, or make a separate filter.
-  // Let's refine: Active (New + In Progress) vs History (Resolved)
-  const activeAlerts = alerts.filter((a) =>
-    ["new", "in_progress"].includes(a.status)
-  );
-  const historyAlerts = alerts.filter((a) => a.status === "resolved");
+  useEffect(() => {
+    if (expandedAlert) {
+      const alert = alerts?.find((a) => a.id === expandedAlert);
+      if (alert) {
+        setValue("note", alert.userNotes || "");
+      }
+    }
+  }, [expandedAlert, alerts, setValue]);
+
+  const activeAlerts =
+    alerts?.filter((a) => ["new", "in_progress"].includes(a.status)) || [];
+  const historyAlerts = alerts?.filter((a) => a.status === "resolved") || [];
 
   const listToShow = alertFilter === "history" ? historyAlerts : activeAlerts;
-
-  const handleAlertAction = (
-    id: string,
-    actionStatus: "in_progress" | "resolved"
-  ) => {
-    setAlerts((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, status: actionStatus } : a))
-    );
-  };
-
-  const handleUpdateNote = (id: string, note: string) => {
-    setAlerts((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, userNotes: note } : a))
-    );
-  };
 
   return (
     <DashboardLayout>
@@ -262,8 +316,12 @@ export default function DashboardAlertPage() {
                             <button
                               key={idx}
                               onClick={() =>
-                                handleAlertAction(alert.id, "in_progress")
+                                updateAlertStatusMutation.mutate({
+                                  id: alert.id,
+                                  status: "in_progress",
+                                })
                               }
+                              disabled={updateAlertStatusMutation.isPending}
                               className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 transition-all flex items-center gap-2"
                             >
                               <PlayCircle size={14} />
@@ -279,44 +337,58 @@ export default function DashboardAlertPage() {
                       <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
                         Catatan Tindakan
                       </p>
-                      <textarea
-                        className="w-full text-sm p-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none mb-3"
-                        placeholder="Tulis catatan hasil tindakan Anda di sini... (Contoh: Sudah telpon supplier, harga baru efektif minggu depan)"
-                        rows={2}
-                        value={alert.userNotes || ""}
-                        onChange={(e) =>
-                          handleUpdateNote(alert.id, e.target.value)
-                        }
-                        disabled={alert.status === "resolved"}
-                      ></textarea>
-
-                      <div className="flex justify-end gap-3">
-                        {alert.status !== "resolved" ? (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setExpandedAlert(null)}
-                            >
-                              Tutup
-                            </Button>
-                            <Button
-                              size="sm"
-                              onClick={() =>
-                                handleAlertAction(alert.id, "resolved")
-                              }
-                            >
-                              <CheckCircle2 size={16} className="mr-2" /> Tandai
-                              Selesai
-                            </Button>
-                          </>
-                        ) : (
-                          <span className="text-sm text-emerald-600 font-medium flex items-center">
-                            <CheckCircle2 size={16} className="mr-2" /> Masalah
-                            Terselesaikan
-                          </span>
+                      <form
+                        onSubmit={handleSubmit((data) =>
+                          updateAlertNoteMutation.mutate({
+                            id: alert.id,
+                            note: data.note || "",
+                          })
                         )}
-                      </div>
+                      >
+                        <textarea
+                          className="w-full text-sm p-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none mb-3"
+                          placeholder="Tulis catatan hasil tindakan Anda di sini... (Contoh: Sudah telpon supplier, harga baru efektif minggu depan)"
+                          rows={2}
+                          {...register("note")}
+                          disabled={
+                            alert.status === "resolved" ||
+                            updateAlertNoteMutation.isPending
+                          }
+                        ></textarea>
+
+                        <div className="flex justify-end gap-3">
+                          {alert.status !== "resolved" ? (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setExpandedAlert(null)}
+                              >
+                                Tutup
+                              </Button>
+                              <Button
+                                size="sm"
+                                type="submit"
+                                onClick={() =>
+                                  updateAlertStatusMutation.mutate({
+                                    id: alert.id,
+                                    status: "resolved",
+                                  })
+                                }
+                                disabled={updateAlertStatusMutation.isPending}
+                              >
+                                <CheckCircle2 size={16} className="mr-2" />{" "}
+                                Tandai Selesai
+                              </Button>
+                            </>
+                          ) : (
+                            <span className="text-sm text-emerald-600 font-medium flex items-center">
+                              <CheckCircle2 size={16} className="mr-2" />{" "}
+                              Masalah Terselesaikan
+                            </span>
+                          )}
+                        </div>
+                      </form>
                     </div>
                   </div>
                 </div>
