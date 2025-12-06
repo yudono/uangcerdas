@@ -38,11 +38,13 @@ export default function ProductsPage() {
     reset,
     setValue,
     formState: { errors },
-  } = useForm<ProductFormInputs>({
+  } = useForm({
     resolver: zodResolver(productSchema),
     defaultValues: {
       unit: "pcs",
       stock: 0,
+      name: "",
+      price: 0,
     },
   });
 
