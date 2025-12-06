@@ -1,117 +1,228 @@
 import { Button } from "../../components/Button";
 import { DashboardLayout } from "@/src/components/Dashboard";
-import { HPPData, Transaction } from "@/types";
+import { Transaction } from "@/types";
 import {
-  LayoutDashboard,
-  BellRing,
-  PieChart,
-  Settings,
-  LogOut,
-  ShieldCheck,
-  TrendingUp,
-  TrendingDown,
-  AlertTriangle,
-  ChevronRight,
-  ChevronDown,
-  CheckCircle2,
-  Download,
-  Receipt,
-  RefreshCw,
-  Wallet,
-  CreditCard,
-  Store,
-  ArrowUpRight,
-  ArrowDownLeft,
   Search,
-  Filter,
-  FileSpreadsheet,
   Upload,
-  PlayCircle,
-  Clock,
-  Save,
+  Receipt,
+  CreditCard,
+  Wallet,
+  Store,
+  FileSpreadsheet,
+  CheckCircle2,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import { useState } from "react";
 import { formatCurrency } from "../../lib/format-currency";
-
-export const initialTransactions: Transaction[] = [
-  {
-    id: "TX-001",
-    date: "24 Okt 2023, 10:30",
-    desc: "Penjualan Kopi Susu (20 cup)",
-    category: "Penjualan",
-    amount: 360000,
-    type: "in",
-    source: "POS",
-    status: "completed",
-  },
-  {
-    id: "TX-002",
-    date: "24 Okt 2023, 09:15",
-    desc: "Restock Susu UHT",
-    category: "Bahan Baku",
-    amount: 850000,
-    type: "out",
-    source: "Bank",
-    status: "completed",
-  },
-  {
-    id: "TX-003",
-    date: "23 Okt 2023, 20:00",
-    desc: "Settlement QRIS",
-    category: "Pencairan",
-    amount: 2450000,
-    type: "in",
-    source: "E-Wallet",
-    status: "completed",
-  },
-  {
-    id: "TX-004",
-    date: "23 Okt 2023, 14:20",
-    desc: "Token Listrik",
-    category: "Operasional",
-    amount: 200000,
-    type: "out",
-    source: "E-Wallet",
-    status: "completed",
-  },
-  {
-    id: "TX-005",
-    date: "23 Okt 2023, 11:00",
-    desc: "Uang Tunai Kasir",
-    category: "Kas",
-    amount: 500000,
-    type: "in",
-    source: "Cash",
-    status: "completed",
-  },
-  {
-    id: "TX-006",
-    date: "22 Okt 2023, 16:45",
-    desc: "Servis Mesin Espresso",
-    category: "Maintenance",
-    amount: 1200000,
-    type: "out",
-    source: "Bank",
-    status: "pending",
-  },
-];
+import { Table, Column } from "@/src/components/Table";
+import { TransactionForm } from "@/src/components/TransactionForm";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function DashboardTransactionPage() {
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showFormModal, setShowFormModal] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>(undefined);
 
   // Transaction Filtering
   const [txSearch, setTxSearch] = useState("");
+  const [dateFilter, setDateFilter] = useState("Semua Tanggal");
+  const [categoryFilter, setCategoryFilter] = useState("Semua Kategori");
+  const [sourceFilter, setSourceFilter] = useState("Semua Sumber");
 
-  const [transactions, setTransactions] =
-    useState<Transaction[]>(initialTransactions);
+  const queryClient = useQueryClient();
+
+  // Fetch Transactions
+  const { data: transactions = [], isLoading, isError } = useQuery<Transaction[]>({
+    queryKey: ['transactions'],
+    queryFn: async () => {
+      const res = await fetch('/api/transactions');
+      if (!res.ok) throw new Error('Failed to fetch transactions');
+      return res.json();
+    },
+  });
+
+  // Mutations
+  const createMutation = useMutation({
+    mutationFn: async (newTx: any) => {
+      const res = await fetch('/api/transactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newTx),
+      });
+      if (!res.ok) throw new Error('Failed to create transaction');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      setShowFormModal(false);
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async (updatedTx: any) => {
+      const res = await fetch(`/api/transactions/${editingTransaction?.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedTx),
+      });
+      if (!res.ok) throw new Error('Failed to update transaction');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      setShowFormModal(false);
+      setEditingTransaction(undefined);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/transactions/${id}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) throw new Error('Failed to delete transaction');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+    },
+  });
 
   const handleImport = () => {
     setShowImportModal(false);
     alert(
       "Simulasi: Data Excel berhasil diimpor! 15 transaksi baru ditambahkan."
     );
-    // In real app, parse CSV here
   };
+
+  const handleCreate = () => {
+    setEditingTransaction(undefined);
+    setShowFormModal(true);
+  };
+
+  const handleEdit = (tx: Transaction) => {
+    setEditingTransaction(tx);
+    setShowFormModal(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm("Apakah Anda yakin ingin menghapus transaksi ini?")) {
+      deleteMutation.mutate(id);
+    }
+  };
+
+  const handleFormSubmit = (data: any) => {
+    if (editingTransaction) {
+      updateMutation.mutate(data);
+    } else {
+      createMutation.mutate(data);
+    }
+  };
+
+  // Filter Logic
+  const filteredTransactions = transactions.filter((t) => {
+    const matchesSearch = t.desc.toLowerCase().includes(txSearch.toLowerCase()) ||
+                          t.amount.toString().includes(txSearch);
+    const matchesCategory = categoryFilter === "Semua Kategori" || t.category === categoryFilter;
+    const matchesSource = sourceFilter === "Semua Sumber" || t.source === sourceFilter;
+    // Date filter logic can be added here if needed (simplified for now)
+    
+    return matchesSearch && matchesCategory && matchesSource;
+  });
+
+  // Table Columns
+  const columns: Column<Transaction>[] = [
+    {
+      header: "Tanggal",
+      accessorKey: "date",
+      cell: (tx) => (
+        <span className="text-sm text-slate-600 whitespace-nowrap">
+          {new Date(tx.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+        </span>
+      ),
+    },
+    {
+      header: "Deskripsi",
+      accessorKey: "desc",
+      cell: (tx) => <span className="text-sm font-medium text-slate-800">{tx.desc}</span>,
+    },
+    {
+      header: "Sumber",
+      accessorKey: "source",
+      cell: (tx) => (
+        <div className="flex items-center gap-2 text-sm text-slate-600">
+          {tx.source === "Bank" && <CreditCard size={14} className="text-blue-600" />}
+          {tx.source === "E-Wallet" && <Wallet size={14} className="text-purple-600" />}
+          {tx.source === "POS" && <Store size={14} className="text-orange-600" />}
+          {tx.source === "Cash" && <Receipt size={14} className="text-emerald-600" />}
+          {tx.source === "Import" && <FileSpreadsheet size={14} className="text-slate-600" />}
+          {tx.source}
+        </div>
+      ),
+    },
+    {
+      header: "Kategori",
+      accessorKey: "category",
+      cell: (tx) => (
+        <span className="inline-block px-2 py-1 rounded-md bg-slate-100 text-slate-600 text-xs font-medium border border-slate-200 whitespace-nowrap">
+          {tx.category}
+        </span>
+      ),
+    },
+    {
+      header: "Jumlah",
+      accessorKey: "amount",
+      className: "text-right",
+      cell: (tx) => (
+        <span
+          className={`text-sm font-bold whitespace-nowrap ${
+            tx.type === "in" ? "text-emerald-600" : "text-slate-800"
+          }`}
+        >
+          {tx.type === "in" ? "+" : "-"}
+          {formatCurrency(tx.amount)}
+        </span>
+      ),
+    },
+    {
+      header: "Status",
+      accessorKey: "status",
+      className: "text-center",
+      cell: (tx) => (
+        tx.status === "completed" ? (
+          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 text-emerald-600">
+            <CheckCircle2 size={14} />
+          </span>
+        ) : (
+          <span className="inline-block px-2 py-1 rounded bg-amber-100 text-amber-700 text-xs font-medium">
+            Pending
+          </span>
+        )
+      ),
+    },
+    {
+      header: "Aksi",
+      className: "text-center",
+      cell: (tx) => (
+        <div className="flex justify-center gap-2">
+          <button
+            onClick={() => handleEdit(tx)}
+            className="p-1 text-slate-400 hover:text-blue-600 transition-colors"
+            title="Edit"
+          >
+            <Pencil size={16} />
+          </button>
+          <button
+            onClick={() => handleDelete(tx.id)}
+            className="p-1 text-slate-400 hover:text-red-600 transition-colors"
+            title="Hapus"
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <DashboardLayout>
@@ -133,7 +244,7 @@ export default function DashboardTransactionPage() {
             >
               <Upload size={16} /> Import Excel
             </Button>
-            <Button variant="primary" className="flex items-center gap-2">
+            <Button variant="primary" className="flex items-center gap-2" onClick={handleCreate}>
               <Receipt size={16} /> Input Manual
             </Button>
           </div>
@@ -155,19 +266,31 @@ export default function DashboardTransactionPage() {
             />
           </div>
           <div className="flex gap-2 overflow-x-auto no-scrollbar">
-            <select className="px-3 py-2 rounded-lg border border-slate-200 text-sm text-slate-600 bg-white focus:outline-none focus:border-emerald-500">
+            <select
+              className="px-3 py-2 rounded-lg border border-slate-200 text-sm text-slate-600 bg-white focus:outline-none focus:border-emerald-500"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+            >
               <option>Semua Tanggal</option>
               <option>Hari Ini</option>
               <option>Minggu Ini</option>
               <option>Bulan Ini</option>
             </select>
-            <select className="px-3 py-2 rounded-lg border border-slate-200 text-sm text-slate-600 bg-white focus:outline-none focus:border-emerald-500">
+            <select
+              className="px-3 py-2 rounded-lg border border-slate-200 text-sm text-slate-600 bg-white focus:outline-none focus:border-emerald-500"
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+            >
               <option>Semua Kategori</option>
               <option>Penjualan</option>
               <option>Bahan Baku</option>
               <option>Operasional</option>
             </select>
-            <select className="px-3 py-2 rounded-lg border border-slate-200 text-sm text-slate-600 bg-white focus:outline-none focus:border-emerald-500">
+            <select
+              className="px-3 py-2 rounded-lg border border-slate-200 text-sm text-slate-600 bg-white focus:outline-none focus:border-emerald-500"
+              value={sourceFilter}
+              onChange={(e) => setSourceFilter(e.target.value)}
+            >
               <option>Semua Sumber</option>
               <option>Bank</option>
               <option>E-Wallet</option>
@@ -176,105 +299,28 @@ export default function DashboardTransactionPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-100">
-                  <th className="p-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    Tanggal
-                  </th>
-                  <th className="p-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    Deskripsi
-                  </th>
-                  <th className="p-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    Sumber
-                  </th>
-                  <th className="p-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    Kategori
-                  </th>
-                  <th className="p-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">
-                    Jumlah
-                  </th>
-                  <th className="p-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center">
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {transactions
-                  .filter(
-                    (t) =>
-                      t.desc.toLowerCase().includes(txSearch.toLowerCase()) ||
-                      t.amount.toString().includes(txSearch)
-                  )
-                  .map((tx) => (
-                    <tr
-                      key={tx.id}
-                      className="hover:bg-slate-50 transition-colors"
-                    >
-                      <td className="p-4 text-sm text-slate-600 whitespace-nowrap">
-                        {tx.date}
-                      </td>
-                      <td className="p-4 text-sm font-medium text-slate-800">
-                        {tx.desc}
-                      </td>
-                      <td className="p-4">
-                        <div className="flex items-center gap-2 text-sm text-slate-600">
-                          {tx.source === "Bank" && (
-                            <CreditCard size={14} className="text-blue-600" />
-                          )}
-                          {tx.source === "E-Wallet" && (
-                            <Wallet size={14} className="text-purple-600" />
-                          )}
-                          {tx.source === "POS" && (
-                            <Store size={14} className="text-orange-600" />
-                          )}
-                          {tx.source === "Cash" && (
-                            <Receipt size={14} className="text-emerald-600" />
-                          )}
-                          {tx.source === "Import" && (
-                            <FileSpreadsheet
-                              size={14}
-                              className="text-slate-600"
-                            />
-                          )}
-                          {tx.source}
-                        </div>
-                      </td>
-                      <td className="p-4">
-                        <span className="inline-block px-2 py-1 rounded-md bg-slate-100 text-slate-600 text-xs font-medium border border-slate-200 whitespace-nowrap">
-                          {tx.category}
-                        </span>
-                      </td>
-                      <td
-                        className={`p-4 text-sm font-bold text-right whitespace-nowrap ${
-                          tx.type === "in"
-                            ? "text-emerald-600"
-                            : "text-slate-800"
-                        }`}
-                      >
-                        {tx.type === "in" ? "+" : "-"}
-                        {formatCurrency(tx.amount)}
-                      </td>
-                      <td className="p-4 text-center">
-                        {tx.status === "completed" ? (
-                          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 text-emerald-600">
-                            <CheckCircle2 size={14} />
-                          </span>
-                        ) : (
-                          <span className="inline-block px-2 py-1 rounded bg-amber-100 text-amber-700 text-xs font-medium">
-                            Pending
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        {isLoading ? (
+          <div className="text-center py-10">Loading...</div>
+        ) : isError ? (
+          <div className="text-center py-10 text-red-500">Error loading transactions</div>
+        ) : (
+          <Table
+            columns={columns}
+            data={filteredTransactions}
+            keyExtractor={(tx) => tx.id}
+          />
+        )}
       </div>
+
+      {/* Transaction Form Modal */}
+      {showFormModal && (
+        <TransactionForm
+          initialData={editingTransaction}
+          onSubmit={handleFormSubmit}
+          onCancel={() => setShowFormModal(false)}
+          isLoading={createMutation.isPending || updateMutation.isPending}
+        />
+      )}
 
       {/* Import Modal */}
       {showImportModal && (

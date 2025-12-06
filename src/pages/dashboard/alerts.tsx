@@ -1,6 +1,6 @@
 import { Button } from "../../components/Button";
 import { DashboardLayout } from "@/src/components/Dashboard";
-import { AIAlert, HPPData, Transaction } from "@/types";
+import { AIAlert, Transaction } from "@/types";
 import {
   ShieldCheck,
   AlertTriangle,
@@ -27,62 +27,9 @@ export default function DashboardAlertPage() {
   type NoteFormInputs = z.infer<typeof noteSchema>;
 
   const fetchAlerts = async (): Promise<AIAlert[]> => {
-    // Simulate API call
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve([
-          {
-            id: "1",
-            severity: "high",
-            title: "Lonjakan Tagihan Listrik",
-            description:
-              "Tagihan listrik terdeteksi 40% lebih tinggi dari rata-rata.",
-            date: "Hari ini, 09:00",
-            amount: "-Rp 850.000",
-            recommendation:
-              "Analisis menunjukkan penggunaan tinggi di jam 22:00-06:00. Kemungkinan AC gudang lupa dimatikan.",
-            suggestedActions: [
-              "Cek Timer AC Gudang",
-              "Briefing Staff Malam",
-              "Set Reminder Otomatis",
-            ],
-            status: "new",
-            impact: "Hemat Rp 350rb/bln",
-          },
-          {
-            id: "2",
-            severity: "medium",
-            title: "Supplier Overcharge",
-            description:
-              'Harga "Biji Kopi Arabica" Supplier A naik 12% minggu ini.',
-            date: "Kemarin, 14:20",
-            amount: "Selisih Rp 150.000",
-            recommendation:
-              "Supplier B menawarkan harga lebih murah dengan kualitas setara.",
-            suggestedActions: [
-              "Hubungi Supplier A (Nego)",
-              "Lihat Kontak Supplier B",
-              "Order Test Batch Supplier B",
-            ],
-            status: "new",
-            impact: "Potensi Hemat 12%",
-          },
-          {
-            id: "3",
-            severity: "low",
-            title: "Pengeluaran Rutin Naik",
-            description: "Biaya packaging naik 5% bulan ini.",
-            date: "22 Okt, 10:00",
-            recommendation:
-              "Coba beli grosir dalam jumlah lebih besar untuk diskon.",
-            suggestedActions: ["Cek Stok Gudang", "Buat PO Bulk Order"],
-            status: "in_progress",
-            userNotes: "Sedang cek kapasitas gudang sebelum order banyak.",
-            impact: "Hemat Rp 50rb/trx",
-          },
-        ]);
-      }, 500);
-    });
+    const res = await fetch('/api/alerts');
+    if (!res.ok) throw new Error('Failed to fetch alerts');
+    return res.json();
   };
 
   const {

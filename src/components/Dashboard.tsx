@@ -1,3 +1,4 @@
+
 import React, { ReactNode, useEffect, useRef } from "react";
 import {
   LayoutDashboard,
@@ -6,11 +7,11 @@ import {
   Settings,
   LogOut,
   ShieldCheck,
-  Receipt,
   LucideIcon,
   Brain,
   ArrowRightLeft,
   MessageSquare,
+  Package,
 } from "lucide-react";
 import { Button } from "./Button";
 import { signOut, useSession } from "next-auth/react";
@@ -28,6 +29,7 @@ interface SidebarItem {
   path: string;
 }
 
+// Sidebar items configuration
 const sidebarItems: SidebarItem[] = [
   {
     id: "overview",
@@ -54,10 +56,10 @@ const sidebarItems: SidebarItem[] = [
     path: "/dashboard/reports",
   },
   {
-    id: "nota",
-    label: "Nota",
-    icon: Receipt,
-    path: "/dashboard/nota",
+    id: "products",
+    label: "Produk & Stok",
+    icon: Package,
+    path: "/dashboard/products",
   },
   {
     id: "ai-chat",
@@ -110,7 +112,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               <ShieldCheck className="w-6 h-6 text-white" />
             </div>
             <span className="text-xl font-bold text-slate-800 tracking-tight">
-              UangCerdas
+              SmartKas
             </span>
           </div>
         </div>
@@ -206,7 +208,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             <div className="bg-emerald-600 p-1 rounded">
               <ShieldCheck className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-slate-800 text-lg">UangCerdas</span>
+            <span className="font-bold text-slate-800 text-lg">SmartKas</span>
           </div>
           <button onClick={() => signOut()}>
             <LogOut size={22} className="text-slate-500" />

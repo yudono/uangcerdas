@@ -2,7 +2,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { Button } from "../../components/Button";
 import { DashboardLayout } from "@/src/components/Dashboard";
-import { AIAlert, HPPData, Transaction } from "@/types";
+import { AIAlert, Transaction } from "@/types";
 import {
   ShieldCheck,
   AlertTriangle,
@@ -36,20 +36,9 @@ interface CashflowData {
 }
 
 const fetchCashflowPrediction = async (): Promise<CashflowData[]> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve([
-        { name: "Sep", val: 32000, color: "#94a3b8" },
-        { name: "Okt", val: 42500, color: "#10b981" },
-        {
-          name: "Nov (Est)",
-          val: 51000,
-          color: "#34d399",
-          isPrediction: true,
-        },
-      ]);
-    }, 1000);
-  });
+  const res = await fetch('/api/reports/cashflow');
+  if (!res.ok) throw new Error('Failed to fetch report data');
+  return res.json();
 };
 
 export default function DashboardAlertPage() {

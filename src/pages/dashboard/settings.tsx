@@ -6,7 +6,7 @@ import { Button } from "@/src/components/Button";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const profileSchema = z.object({
   profileName: z.string().min(1, "Nama lengkap tidak boleh kosong"),
@@ -42,36 +42,26 @@ type PasswordFormInputs = z.infer<typeof passwordSchema>;
 export default function DashboardSettingPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const queryClient = useQueryClient();
+
+  // Fetch Settings
+  const { data: settings, isLoading } = useQuery({
+    queryKey: ['settings'],
+    queryFn: async () => {
+      const res = await fetch('/api/settings');
+      if (!res.ok) throw new Error('Failed to fetch settings');
+      return res.json();
+    },
+  });
 
   // Profile Form
   const {
     register: registerProfile,
     handleSubmit: handleSubmitProfile,
     formState: { errors: profileErrors },
+    reset: resetProfile,
   } = useForm<ProfileFormInputs>({
     resolver: zodResolver(profileSchema),
-    defaultValues: {
-      profileName: "John Doe",
-      profileEmail: "john.doe@example.com",
-    },
-  });
-
-  const updateProfileMutation = useMutation({
-    mutationFn: async (data: ProfileFormInputs) => {
-      // Simulate API call
-      return new Promise<void>((resolve) => {
-        setTimeout(() => {
-          console.log("Updating profile:", data);
-          resolve();
-        }, 1000);
-      });
-    },
-    onSuccess: () => {
-      alert("Profil berhasil diperbarui!");
-    },
-    onError: (error) => {
-      alert(`Gagal memperbarui profil: ${error.message}`);
-    },
   });
 
   // Regional Form
@@ -79,26 +69,55 @@ export default function DashboardSettingPage() {
     register: registerRegional,
     handleSubmit: handleSubmitRegional,
     formState: { errors: regionalErrors },
+    reset: resetRegional,
   } = useForm<RegionalFormInputs>({
     resolver: zodResolver(regionalSchema),
-    defaultValues: {
-      currency: "IDR",
-      timezone: "Asia/Jakarta",
+  });
+
+  // Update form defaults when data is loaded
+  React.useEffect(() => {
+    if (settings) {
+      resetProfile({
+        profileName: settings.profileName,
+        profileEmail: settings.profileEmail,
+      });
+      resetRegional({
+        currency: settings.currency,
+        timezone: settings.timezone,
+      });
+    }
+  }, [settings, resetProfile, resetRegional]);
+
+  const updateProfileMutation = useMutation({
+    mutationFn: async (data: ProfileFormInputs) => {
+      const res = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error('Failed to update profile');
+    },
+    onSuccess: () => {
+      alert("Profil berhasil diperbarui!");
+      queryClient.invalidateQueries({ queryKey: ['settings'] });
+    },
+    onError: (error) => {
+      alert(`Gagal memperbarui profil: ${error.message}`);
     },
   });
 
   const updateRegionalMutation = useMutation({
     mutationFn: async (data: RegionalFormInputs) => {
-      // Simulate API call
-      return new Promise<void>((resolve) => {
-        setTimeout(() => {
-          console.log("Updating regional settings:", data);
-          resolve();
-        }, 1000);
+      const res = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
       });
+      if (!res.ok) throw new Error('Failed to update regional settings');
     },
     onSuccess: () => {
       alert("Pengaturan regional berhasil diperbarui!");
+      queryClient.invalidateQueries({ queryKey: ['settings'] });
     },
     onError: (error) => {
       alert(`Gagal memperbarui pengaturan regional: ${error.message}`);
@@ -117,18 +136,13 @@ export default function DashboardSettingPage() {
 
   const changePasswordMutation = useMutation({
     mutationFn: async (data: PasswordFormInputs) => {
-      // Simulate API call
-      return new Promise<void>((resolve, reject) => {
-        setTimeout(() => {
-          console.log("Changing password:", data);
-          if (data.currentPassword === "password123") {
-            // Dummy check
-            resolve();
-          } else {
-            reject(new Error("Kata sandi saat ini salah"));
-          }
-        }, 1000);
+      const res = await fetch('/api/settings/password', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
       });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || 'Failed to change password');
     },
     onSuccess: () => {
       alert("Kata sandi berhasil diubah!");

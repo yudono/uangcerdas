@@ -55,11 +55,3 @@ export interface Transaction {
   source: 'Bank' | 'E-Wallet' | 'POS' | 'Cash' | 'Import';
   status: 'completed' | 'pending';
 }
-
-export interface HPPData {
-  totalRevenue: number;
-  rawMaterialCost: number;
-  productionCost: number;
-  grossProfit: number;
-  marginPercent: number;
-}
