@@ -23,9 +23,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         try {
             // Get transactions for the last 7 days
             const endDate = new Date();
+            endDate.setHours(23, 59, 59, 999); // End of today
+
             const startDate = new Date();
             startDate.setDate(endDate.getDate() - 6);
-            startDate.setHours(0, 0, 0, 0);
+            startDate.setHours(0, 0, 0, 0); // Start of 7 days ago
 
             const transactions = await prisma.transaction.findMany({
                 where: {

@@ -123,16 +123,7 @@ export default function DashboardPage() {
 
   const { formatCurrency } = useCurrency();
 
-  // Calculate totals from transactions (if metrics are not used directly)
-  const totalIncome = transactions
-    ?.filter((t: any) => t.type === "in")
-    .reduce((acc: number, curr: any) => acc + Number(curr.amount), 0) || 0;
 
-  const totalExpense = transactions
-    ?.filter((t: any) => t.type === "out")
-    .reduce((acc: number, curr: any) => acc + Number(curr.amount), 0) || 0;
-
-  const balance = totalIncome - totalExpense;
 
   return (
     <DashboardLayout>
@@ -150,7 +141,7 @@ export default function DashboardPage() {
           <div className="hidden md:block">
             <p className="text-sm text-slate-400 text-right">Saldo Saat Ini</p>
             <p className="text-2xl font-bold text-emerald-600">
-              {formatCurrency(balance)}
+              {metrics ? formatCurrency(metrics.netCash) : "..."}
             </p>
           </div>
         </div>
@@ -178,51 +169,7 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Cards Summary */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="bg-emerald-100 p-2 rounded-lg">
-                <TrendingUp className="w-5 h-5 text-emerald-600" />
-              </div>
-              <span className="text-slate-500 font-medium">Pemasukan</span>
-            </div>
-            <p className="text-2xl font-bold text-slate-800">
-              {formatCurrency(totalIncome)}
-            </p>
-            <p className="text-xs text-emerald-600 mt-1 flex items-center gap-1">
-              <ArrowUpRight size={12} /> +12% dari bulan lalu
-            </p>
-          </div>
 
-          <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="bg-red-100 p-2 rounded-lg">
-                <TrendingDown className="w-5 h-5 text-red-600" />
-              </div>
-              <span className="text-slate-500 font-medium">Pengeluaran</span>
-            </div>
-            <p className="text-2xl font-bold text-slate-800">
-              {formatCurrency(totalExpense)}
-            </p>
-            <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
-              <ArrowDownRight size={12} /> +5% dari bulan lalu
-            </p>
-          </div>
-
-          <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="bg-blue-100 p-2 rounded-lg">
-                <Wallet className="w-5 h-5 text-blue-600" />
-              </div>
-              <span className="text-slate-500 font-medium">Saldo Bersih</span>
-            </div>
-            <p className="text-2xl font-bold text-slate-800">
-              {formatCurrency(balance)}
-            </p>
-            <p className="text-xs text-slate-400 mt-1">Update real-time</p>
-          </div>
-        </div>
 
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>

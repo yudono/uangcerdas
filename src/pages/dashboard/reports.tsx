@@ -222,7 +222,7 @@ export default function DashboardReportsPage() {
                     Estimasi Penghematan (Resolved)
                   </p>
                   <p className="text-2xl font-bold text-emerald-600">
-                {formatCurrency(reportData?.totalIncome || 0)}
+                {formatCurrency(resolvedSavings)}
               </p>
                 </div>
                 <div className="h-10 w-10 bg-emerald-200 rounded-full flex items-center justify-center">
