@@ -6,7 +6,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { formatCurrency } from "@/src/lib/format-currency";
+// import { formatCurrency } from "@/src/lib/format-currency"; // Removed in favor of hook
+import { useCurrency } from "@/src/hooks/useCurrency";
 import { ScanProductModal } from "@/src/components/ScanProductModal";
 import { ImportExcelModal } from "@/src/components/ImportExcelModal";
 
@@ -29,6 +30,7 @@ interface Product {
 }
 
 export default function ProductsPage() {
+  const { formatCurrency } = useCurrency();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isScanModalOpen, setIsScanModalOpen] = useState(false);
   const [isExcelModalOpen, setIsExcelModalOpen] = useState(false);

@@ -38,6 +38,34 @@ export default function ChatPage() {
     scrollToBottom();
   }, [messages]);
 
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const res = await fetch('/api/chat/history');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.history && data.history.length > 0) {
+            const historyMessages = data.history.map((msg: any) => ({
+              id: msg.id,
+              role: msg.role,
+              content: msg.content,
+              timestamp: new Date(Number(msg.timestamp)),
+            }));
+            // Prepend history, keep welcome message if history is empty? 
+            // Or just replace. Let's append history after welcome message or replace it.
+            // If we have history, maybe we don't need the generic welcome message, 
+            // or we put the welcome message first.
+            setMessages(historyMessages);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch chat history", error);
+      }
+    };
+
+    fetchHistory();
+  }, []);
+
   const handleSendMessage = async () => {
     if ((!inputText.trim() && !selectedImage) || isSending) return;
 

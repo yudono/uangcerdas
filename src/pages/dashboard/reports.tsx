@@ -14,7 +14,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useState } from "react";
-import { formatCurrency } from "../../lib/format-currency";
+// import { formatCurrency } from "../../lib/format-currency"; // Removed in favor of hook
 import {
   Bar,
   BarChart,
@@ -78,12 +78,7 @@ export default function DashboardReportsPage() {
 
   const resolvedAlerts = alerts?.filter(a => a.status === 'resolved') || [];
   const resolvedSavings = resolvedAlerts.reduce((sum, a) => {
-    // Extract number from string like "Rp 1.200.000" or handle if it's already a number
-    // The API returns formatted string "Rp ...", so we need to parse it if we want to sum it up
-    // However, for simplicity, let's assume the API returns a raw number or we parse it.
-    // Actually, the API returns formatted string. Let's try to parse it.
-    const amountStr = a.amount?.replace(/[^0-9]/g, '') || '0';
-    return sum + parseInt(amountStr, 10);
+    return sum + (Number(a.amount) || 0);
   }, 0);
 
   const downloadReportMutation = useMutation({
@@ -247,7 +242,7 @@ export default function DashboardReportsPage() {
                         className="text-emerald-500 mt-0.5"
                       />
                       <span className="text-slate-600">
-                        {alert.title} ({alert.amount || "N/A"})
+                        {alert.title} ({alert.amount ? formatCurrency(alert.amount) : "N/A"})
                       </span>
                     </li>
                   ))}

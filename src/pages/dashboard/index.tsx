@@ -26,7 +26,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { formatCurrency } from "../../lib/format-currency";
+// import { formatCurrency } from "../../lib/format-currency"; // Removed in favor of hook
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const chartData = [

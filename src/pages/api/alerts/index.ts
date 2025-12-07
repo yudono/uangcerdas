@@ -30,7 +30,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             const formattedAlerts = alerts.map(alert => ({
                 ...alert,
                 date: alert.date.toISOString().split('T')[0],
-                amount: alert.amount ? `Rp ${Number(alert.amount).toLocaleString('id-ID')}` : undefined,
+                amount: alert.amount ? Number(alert.amount) : undefined,
                 createdAt: alert.createdAt.toISOString(),
                 updatedAt: alert.updatedAt.toISOString()
             }));

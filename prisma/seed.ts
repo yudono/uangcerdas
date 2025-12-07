@@ -24,9 +24,15 @@ async function main() {
 
         const MILVUS_URL = process.env.MILVUS_URL || "144.91.103.249:19530";
         const MILVUS_TOKEN = process.env.MILVUS_TOKEN;
+
+        // Parse URL to handle https and ssl
+        const address = MILVUS_URL.replace(/^https?:\/\//, "");
+        const ssl = MILVUS_URL.startsWith("https://") || MILVUS_URL.includes("zilliz.com");
+
         milvusClient = new MilvusClient({
-            address: MILVUS_URL,
-            token: MILVUS_TOKEN
+            address: address,
+            token: MILVUS_TOKEN,
+            ssl: ssl
         });
 
         const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
@@ -62,12 +68,13 @@ async function main() {
         try {
             const { DataType } = await import("@zilliz/milvus2-sdk-node");
             console.log('Attempting to reset Milvus collection...');
-            await milvusClient.dropCollection({ collection_name: "transactions" });
-            console.log('Dropped Milvus collection: transactions');
+            console.log('Attempting to reset Milvus collection...');
+            await milvusClient.dropCollection({ collection_name: "transactions_v2" });
+            console.log('Dropped Milvus collection: transactions_v2');
 
-            // Re-create collection with correct dimension for MiniLM-L6-v2 (384)
+            // Re-create collection with correct dimension for Gemini embedding-001 (768)
             await milvusClient.createCollection({
-                collection_name: "transactions",
+                collection_name: "transactions_v2",
                 fields: [
                     {
                         name: "id",
@@ -86,7 +93,7 @@ async function main() {
                         name: "vector",
                         description: "Transaction Embedding",
                         data_type: DataType.FloatVector,
-                        dim: 384, // Xenova/all-MiniLM-L6-v2 dimension
+                        dim: 768, // Gemini embedding-001 dimension
                     },
                     {
                         name: "text",
@@ -102,11 +109,11 @@ async function main() {
                     },
                 ],
             });
-            console.log('Created Milvus collection: transactions');
+            console.log('Created Milvus collection: transactions_v2');
 
             // Create index
             await milvusClient.createIndex({
-                collection_name: "transactions",
+                collection_name: "transactions_v2",
                 field_name: "vector",
                 index_name: "vector_index",
                 index_type: "IVF_FLAT",
@@ -116,7 +123,7 @@ async function main() {
             console.log('Created Milvus index');
 
             await milvusClient.loadCollectionSync({
-                collection_name: "transactions",
+                collection_name: "transactions_v2",
             });
             console.log('Loaded Milvus collection');
 
@@ -240,8 +247,10 @@ async function main() {
 
                     // Insert all into Milvus
                     // Milvus might have a limit on message size (usually 64MB), 2500 records should be fine.
+                    // Insert all into Milvus
+                    // Milvus might have a limit on message size (usually 64MB), 2500 records should be fine.
                     await milvusClient.upsert({
-                        collection_name: "transactions",
+                        collection_name: "transactions_v2",
                         fields_data: fields_data,
                     });
 

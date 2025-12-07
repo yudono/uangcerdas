@@ -16,7 +16,7 @@ import {
   Camera,
 } from "lucide-react";
 import { useState } from "react";
-import { formatCurrency } from "../../lib/format-currency";
+// import { formatCurrency } from "../../lib/format-currency"; // Removed in favor of hook
 import { Table, Column } from "@/src/components/Table";
 import { TransactionForm } from "@/src/components/TransactionForm";
 import { ScanModal } from "@/src/components/ScanModal";
@@ -24,6 +24,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCurrency } from "@/src/hooks/useCurrency";
 
 export default function DashboardTransactionPage() {
+  const { formatCurrency } = useCurrency();
   const [showImportModal, setShowImportModal] = useState(false);
   const [showScanModal, setShowScanModal] = useState(false);
   const [showFormModal, setShowFormModal] = useState(false);

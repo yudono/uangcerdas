@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { Camera, Upload, X, Loader2, Check, Plus, Trash2 } from 'lucide-react';
 import { Button } from './Button';
-import { formatCurrency } from '@/src/lib/format-currency';
+// import { formatCurrency } from '@/src/lib/format-currency'; // Removed in favor of hook
+import { useCurrency } from '@/src/hooks/useCurrency';
 
 interface ScannedItem {
     name: string;
@@ -24,6 +25,7 @@ interface ScanModalProps {
 }
 
 export const ScanModal: React.FC<ScanModalProps> = ({ onClose, onSave }) => {
+    const { formatCurrency } = useCurrency();
     const [step, setStep] = useState<'upload' | 'processing' | 'review'>('upload');
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [scanResult, setScanResult] = useState<ScanResult | null>(null);

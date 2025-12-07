@@ -10,7 +10,7 @@ import {
   PlayCircle,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { formatCurrency } from "../../lib/format-currency";
+// import { formatCurrency } from "../../lib/format-currency"; // Removed in favor of hook
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCurrency } from "@/src/hooks/useCurrency";
 import { useForm } from "react-hook-form";
@@ -227,9 +227,9 @@ export default function DashboardAlertPage() {
                     </div>
                   </div>
                   <p className="text-slate-600">{alert.description}</p>
-                  {alert.amount && (
+                    {alert.amount && (
                     <p className="text-red-600 font-bold mt-1 text-sm">
-                      {alert.amount}
+                      {formatCurrency(alert.amount)}
                     </p>
                   )}
                 </div>

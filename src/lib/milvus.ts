@@ -4,13 +4,18 @@ import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
 
 const MILVUS_URL = process.env.MILVUS_URL || "144.91.103.249:19530";
 const MILVUS_TOKEN = process.env.MILVUS_TOKEN;
-const COLLECTION_NAME = "transactions";
+const COLLECTION_NAME = "transactions_v2"; // Renamed for schema update (dim 768)
+
+// Parse URL to handle https and ssl
+const address = MILVUS_URL.replace(/^https?:\/\//, "");
+const ssl = MILVUS_URL.startsWith("https://") || MILVUS_URL.includes("zilliz.com");
 
 // Initialize Milvus Client
 // Note: In a real app, you might want to handle connection pooling or singleton better.
 export const milvusClient = new MilvusClient({
-    address: MILVUS_URL,
-    token: MILVUS_TOKEN
+    address: address,
+    token: MILVUS_TOKEN,
+    ssl: ssl,
 });
 
 // Initialize Embeddings
@@ -50,7 +55,7 @@ export async function ensureCollection() {
                     name: "vector",
                     description: "Transaction Embedding",
                     data_type: DataType.FloatVector,
-                    dim: 384, // Xenova/all-MiniLM-L6-v2 dimension
+                    dim: 768, // Gemini embedding-001 dimension
                 },
                 {
                     name: "text",
@@ -145,7 +150,23 @@ export async function searchTransactions(userId: string, query: string, limit = 
     return searchRes.results;
 }
 
-const CHAT_COLLECTION_NAME = "chat_history";
+export async function searchChatHistory(userId: string, query: string, limit = 5) {
+    await ensureChatCollection();
+
+    const vector = await embeddings.embedQuery(query);
+
+    const searchRes = await milvusClient.search({
+        collection_name: CHAT_COLLECTION_NAME,
+        data: vector,
+        filter: `user_id == "${userId}"`,
+        limit: limit,
+        output_fields: ["role", "content", "timestamp"],
+    });
+
+    return searchRes.results;
+}
+
+const CHAT_COLLECTION_NAME = "chat_history_v2"; // Renamed for schema update (dim 768)
 
 export async function ensureChatCollection() {
     const hasCollection = await milvusClient.hasCollection({
@@ -185,7 +206,7 @@ export async function ensureChatCollection() {
                     name: "vector",
                     description: "Content Embedding",
                     data_type: DataType.FloatVector,
-                    dim: 384,
+                    dim: 768, // Gemini embedding-001 dimension
                 },
                 {
                     name: "timestamp",
@@ -216,7 +237,6 @@ export async function upsertMessage(userId: string, role: 'user' | 'assistant', 
     console.log(`Upserting message for user ${userId}, role ${role}`);
     try {
         const vector = await embeddings.embedQuery(content);
-        console.log("Embedding generated successfully");
         const id = `${Date.now()}-${Math.random().toString(36).substring(7)}`;
 
         await milvusClient.upsert({
@@ -237,18 +257,19 @@ export async function upsertMessage(userId: string, role: 'user' | 'assistant', 
     }
 }
 
-export async function searchChatHistory(userId: string, query: string, limit = 5) {
+
+
+export async function getChatHistory(userId: string, limit = 50) {
     await ensureChatCollection();
 
-    const vector = await embeddings.embedQuery(query);
-
-    const searchRes = await milvusClient.search({
+    // Query for messages from this user, sorted by timestamp
+    const queryRes = await milvusClient.query({
         collection_name: CHAT_COLLECTION_NAME,
-        data: vector,
         filter: `user_id == "${userId}"`,
+        output_fields: ["id", "role", "content", "timestamp"],
         limit: limit,
-        output_fields: ["role", "content", "timestamp"],
     });
 
-    return searchRes.results;
+    // Sort by timestamp ascending
+    return queryRes.data.sort((a: any, b: any) => Number(a.timestamp) - Number(b.timestamp));
 }
