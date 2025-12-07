@@ -51,6 +51,7 @@ model Business {
   businessName String
   businessType String
   createdAt    DateTime @default(now())
+  lastAnomalyCheck DateTime?
 
   user User @relation(fields: [userId], references: [id])
 

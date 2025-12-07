@@ -4,7 +4,15 @@ import { AIService } from '@/src/lib/ai-service';
 export class AnomalyService {
     static async runDetection() {
         // Fetch all businesses
+        // Fetch top 5 businesses that haven't been checked in the last 24 hours
         const businesses = await prisma.business.findMany({
+            where: {
+                OR: [
+                    { lastAnomalyCheck: null },
+                    { lastAnomalyCheck: { lt: new Date(Date.now() - 24 * 60 * 60 * 1000) } }
+                ]
+            },
+            take: 5, // Process only 5 at a time to avoid timeouts
             include: {
                 transactions: {
                     orderBy: { date: 'desc' },
@@ -49,6 +57,11 @@ export class AnomalyService {
                     }))
                 });
             }
+            // Update lastAnomalyCheck
+            await prisma.business.update({
+                where: { id: business.id },
+                data: { lastAnomalyCheck: new Date() }
+            });
         }
 
         return totalAnomalies;
