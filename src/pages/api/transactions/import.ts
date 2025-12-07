@@ -6,6 +6,7 @@ import * as XLSX from 'xlsx';
 import formidable from 'formidable';
 import fs from 'fs';
 import { upsertTransaction } from '@/src/lib/milvus';
+import { AnomalyService } from '@/src/lib/anomaly-service';
 
 export const config = {
     api: {
@@ -51,6 +52,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const ws = wb.Sheets[wsName];
         const data: any[] = XLSX.utils.sheet_to_json(ws, { header: 1 });
 
+        // Get headers from the first row
+        const headers = (data[0] || []).map((h: any) => String(h).toLowerCase().trim());
+
+        // Helper to find index by possible header names
+        const findIndex = (possibleNames: string[]) => {
+            return headers.findIndex((h: string) => possibleNames.includes(h));
+        };
+
+        const idxDate = findIndex(['date', 'tanggal', 'tgl']);
+        const idxDesc = findIndex(['description', 'deskripsi', 'keterangan', 'uraian']);
+        const idxAmount = findIndex(['amount', 'amount (idr)', 'jumlah', 'nominal', 'nilai']);
+        const idxType = findIndex(['type', 'tipe', 'jenis', 'flow']);
+        const idxCategory = findIndex(['category', 'kategori']);
+
+        // Check if required columns are found
+        if (idxDate === -1 || idxDesc === -1 || idxAmount === -1 || idxType === -1) {
+            return res.status(400).json({
+                message: 'Missing required columns in header. Please ensure your file has: Date, Description, Amount, Type, Category',
+                missingColumns: {
+                    Date: idxDate === -1,
+                    Description: idxDesc === -1,
+                    Amount: idxAmount === -1,
+                    Type: idxType === -1
+                }
+            });
+        }
+
         // Skip header row
         const rows = data.slice(1);
         const validTransactions = [];
@@ -58,46 +86,71 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         for (let i = 0; i < rows.length; i++) {
             const row = rows[i];
-            // Expected: Date, Description, Amount, Type, Category
-            // Index: 0, 1, 2, 3, 4
-
             if (!row || row.length === 0) continue;
 
-            const dateStr = row[0];
-            const desc = row[1];
-            const amount = row[2];
-            const type = row[3]?.toLowerCase();
-            const category = row[4];
+            const dateStr = row[idxDate];
+            const desc = row[idxDesc];
+            const amount = row[idxAmount];
+            const typeRaw = row[idxType];
+            const category = idxCategory !== -1 ? row[idxCategory] : 'Uncategorized';
+
+            const type = (typeRaw ? String(typeRaw) : '').toLowerCase();
 
             // Validation
-            if (!dateStr || !desc || !amount || !type || !category) {
+            if (!dateStr || !desc || !amount || !type) {
                 errors.push(`Row ${i + 2}: Missing required fields`);
                 continue;
             }
 
-            const date = new Date(dateStr);
+            // Handle Excel serial date or string date
+            let date: Date;
+            if (typeof dateStr === 'number') {
+                // Excel serial date
+                date = new Date(Math.round((dateStr - 25569) * 86400 * 1000));
+            } else {
+                date = new Date(dateStr);
+            }
+
             if (isNaN(date.getTime())) {
                 errors.push(`Row ${i + 2}: Invalid date format`);
                 continue;
             }
 
-            if (isNaN(Number(amount))) {
+            // Clean amount string (remove currency symbols, commas, etc if string)
+            let cleanAmount = amount;
+            if (typeof amount === 'string') {
+                cleanAmount = amount.replace(/[^0-9.-]+/g, "");
+            }
+
+            if (isNaN(Number(cleanAmount))) {
                 errors.push(`Row ${i + 2}: Invalid amount`);
                 continue;
             }
 
             if (type !== 'in' && type !== 'out') {
-                errors.push(`Row ${i + 2}: Invalid type (must be 'in' or 'out')`);
-                continue;
+                // Try to infer from Indonesian
+                if (type === 'masuk' || type === 'income' || type === 'pemasukan') {
+                    // type = 'in'; // const is read-only, need to handle this
+                } else if (type === 'keluar' || type === 'expense' || type === 'pengeluaran') {
+                    // type = 'out';
+                } else {
+                    errors.push(`Row ${i + 2}: Invalid type (must be 'in' or 'out')`);
+                    continue;
+                }
             }
+
+            // Normalize type
+            let finalType = type;
+            if (['masuk', 'income', 'pemasukan'].includes(type)) finalType = 'in';
+            if (['keluar', 'expense', 'pengeluaran'].includes(type)) finalType = 'out';
 
             validTransactions.push({
                 businessId: business.id,
                 date: date,
                 description: desc,
-                amount: Number(amount),
-                type: type,
-                category: category,
+                amount: Number(cleanAmount),
+                type: finalType,
+                category: category || 'Lainnya',
                 status: 'completed',
             });
         }
@@ -113,6 +166,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             // Or just fire and forget
             Promise.all(validTransactions.map(t => upsertTransaction({ ...t, id: 'temp-id-for-vector' })))
                 .catch(e => console.error("Milvus sync error during import", e));
+
+            // Trigger Anomaly Detection
+            AnomalyService.runDetectionForBusiness(business.id).catch(err => console.error("Anomaly detection failed:", err));
         }
 
         return res.status(200).json({

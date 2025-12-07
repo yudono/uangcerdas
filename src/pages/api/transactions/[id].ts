@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { prisma } from '@/src/lib/prisma';
 import { authOptions } from '@/src/lib/auth';
 import { upsertTransaction, deleteTransaction } from '@/src/lib/milvus';
+import { AnomalyService } from '@/src/lib/anomaly-service';
 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -79,6 +80,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 console.error("Failed to update Milvus:", e);
             }
 
+            // Trigger Anomaly Detection
+            AnomalyService.runDetectionForBusiness(business.id).catch(err => console.error("Anomaly detection failed:", err));
+
             return res.status(200).json(updatedTransaction);
         } catch (error) {
             console.error('Error updating transaction:', error); // Added error logging
@@ -106,6 +110,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 console.error("Failed to delete from Milvus:", e);
             }
 
+
+            // Trigger Anomaly Detection
+            AnomalyService.runDetectionForBusiness(business.id).catch(err => console.error("Anomaly detection failed:", err));
 
             return res.status(200).json({ message: 'Transaction deleted' });
         } catch (error) {

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { prisma } from '@/src/lib/prisma';
 import { authOptions } from '@/src/lib/auth';
 import { upsertTransaction } from '@/src/lib/milvus';
+import { AnomalyService } from '@/src/lib/anomaly-service';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
@@ -163,6 +164,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 } catch (e) {
                     console.error("Failed to sync to Milvus:", e);
                 }
+
+                // Trigger Anomaly Detection (Fire and Forget)
+                // We don't await this to keep the response fast
+                AnomalyService.runDetectionForBusiness(businessId).catch(err => {
+                    console.error("Anomaly detection failed:", err);
+                });
 
                 return res.status(201).json(formattedTransaction);
             } catch (error) {

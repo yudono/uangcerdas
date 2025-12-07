@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 const loginSchema = z.object({
   email: z.string().email("Email tidak valid"),
@@ -37,13 +38,16 @@ export default function LoginPage() {
     mutationFn: loginUser,
     onSuccess: (result) => {
       if (result?.url) {
+        toast.success("Login berhasil!");
         window.location.href = result.url;
       }
     },
     onError: (error: any) => {
+      const msg = error?.message || "Email atau password salah";
+      toast.error(msg);
       setError("root.serverError", {
         type: "400",
-        message: error?.message || "Email atau password salah",
+        message: msg,
       });
     },
   });

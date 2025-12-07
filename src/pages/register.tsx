@@ -6,6 +6,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/router";
+import toast from "react-hot-toast";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -59,6 +60,7 @@ export default function RegisterPage() {
   const { mutate, isPending } = useMutation({
     mutationFn: registerUser,
     onSuccess: () => {
+      toast.success("Registrasi berhasil! Sedang login...");
       signIn("credentials", {
         email: getValues("email"),
         password: getValues("password"),
@@ -66,6 +68,7 @@ export default function RegisterPage() {
       });
     },
     onError: (error: any) => {
+      toast.error(error.message || "Registrasi gagal");
       setError("root.serverError", {
         type: "400",
         message: error.message,
