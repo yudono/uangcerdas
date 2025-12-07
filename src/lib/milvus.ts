@@ -104,7 +104,8 @@ export async function upsertTransaction(transaction: any) {
     // Let's assume the caller will ensure business.userId is available or we use a fallback/error.
     const userId = transaction.business?.userId || transaction.userId; // Add userId to Transaction model if needed or include business
 
-    const text = `${transaction.description} - ${transaction.amount} - ${categoryName} - ${type}`;
+    const dateStr = date instanceof Date ? date.toISOString().split('T')[0] : date;
+    const text = `${dateStr} - ${transaction.description} - ${transaction.amount} - ${categoryName} - ${type}`;
     const vector = await embeddings.embedQuery(text);
 
     const data = {
@@ -117,6 +118,7 @@ export async function upsertTransaction(transaction: any) {
             date: date,
             category: categoryName,
             type: type,
+            description: transaction.description,
         }),
     };
 

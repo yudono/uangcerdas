@@ -65,7 +65,8 @@ export async function processChat(userId: string, message: string) {
                 for (const batch of batches) {
                     const batchContent = batch.map((r: any) => {
                         const meta = JSON.parse(r.metadata);
-                        return `- ${r.text} (Date: ${meta.date}, Amount: ${format(meta.amount)})`;
+                        // Use structured metadata for clearer AI analysis
+                        return `- Tanggal: ${meta.date}, Deskripsi: ${meta.description || r.text}, Jumlah: ${format(meta.amount)}, Kategori: ${meta.category}, Tipe: ${meta.type}`;
                     }).join("\n");
 
                     // Analyze this batch

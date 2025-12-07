@@ -229,7 +229,7 @@ async function main() {
 
                 try {
                     // Bulk embed all texts
-                    const texts = transactionsToInsert.map(t => `${t.description} - ${t.amount} - ${t.category} - ${t.type}`);
+                    const texts = transactionsToInsert.map(t => `${t.date.toISOString().split('T')[0]} - ${t.description} - ${t.amount} - ${t.category} - ${t.type}`);
                     const vectors = await embeddings.embedDocuments(texts);
 
                     const fields_data = transactionsToInsert.map((t, idx) => ({
@@ -242,6 +242,7 @@ async function main() {
                             date: t.date,
                             category: t.category,
                             type: t.type,
+                            description: t.description,
                         }),
                     }));
 
