@@ -19,7 +19,8 @@ async function main() {
     let embeddings: any = null;
     try {
         const { MilvusClient } = await import("@zilliz/milvus2-sdk-node");
-        const { HuggingFaceTransformersEmbeddings } = await import("@langchain/community/embeddings/huggingface_transformers");
+        const { OpenAIEmbeddings } = await import("@langchain/openai");
+        const { GoogleGenerativeAIEmbeddings } = await import("@langchain/google-genai");
 
         const MILVUS_URL = process.env.MILVUS_URL || "144.91.103.249:19530";
         const MILVUS_TOKEN = process.env.MILVUS_TOKEN;
@@ -28,10 +29,20 @@ async function main() {
             token: MILVUS_TOKEN
         });
 
-        embeddings = new HuggingFaceTransformersEmbeddings({
-            model: "Xenova/all-MiniLM-L6-v2",
-        });
-        console.log("Milvus client initialized with Xenova embeddings.");
+        const googleKey = process.env.GOOGLE_API_KEY;
+        embeddings = googleKey
+            ? new GoogleGenerativeAIEmbeddings({
+                apiKey: googleKey,
+                modelName: "embedding-001",
+            })
+            : new OpenAIEmbeddings({
+                openAIApiKey: "dummy",
+                configuration: {
+                    baseURL: "https://api.kolosal.ai/v1",
+                },
+                modelName: "nomic-ai/nomic-embed-text-v1.5",
+            });
+        console.log(`Milvus client initialized with ${googleKey ? "Gemini" : "Kolosal"} embeddings.`);
     } catch (err) {
         console.error("Error initializing Milvus:", err);
         console.warn("Failed to initialize Milvus client. Seeding will proceed without vector sync.");

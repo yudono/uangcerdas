@@ -17,6 +17,7 @@ import { Button } from "./Button";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import Link from "next/link";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -107,14 +108,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       {/* Sidebar Desktop */}
       <aside className="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 h-screen fixed z-20 shadow-sm">
         <div className="p-6 border-b border-slate-100">
-          <div className="flex items-center gap-2">
-            <div className="bg-emerald-600 p-1.5 rounded-lg">
-              <ShieldCheck className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-xl font-bold text-slate-800 tracking-tight">
-              SmartKas
-            </span>
-          </div>
+          <Link href="/dashboard">
+             <img src="/logo-all.png" alt="SmartKas" className="h-10 w-auto" />
+          </Link>
         </div>
 
         <nav className="flex-1 p-4 space-y-1 overflow-x-hidden overflow-y-auto">
@@ -204,12 +200,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       <main className="flex-1 md:ml-64 p-4 md:p-8 overflow-y-auto">
         {/* Mobile Header */}
         <div className="md:hidden flex justify-between items-center mb-6 bg-white p-4 rounded-xl shadow-sm border border-slate-100 sticky top-0 z-10">
-          <div className="flex items-center gap-2">
-            <div className="bg-emerald-600 p-1 rounded">
-              <ShieldCheck className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-bold text-slate-800 text-lg">SmartKas</span>
-          </div>
+          <Link href="/dashboard">
+             <img src="/logo-all.png" alt="SmartKas" className="h-8 w-auto" />
+          </Link>
           <button onClick={() => signOut()}>
             <LogOut size={22} className="text-slate-500" />
           </button>

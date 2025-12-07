@@ -40,7 +40,7 @@ export const Solution: React.FC = () => {
               <span className="text-emerald-400">Satpam Digital untuk Uangmu</span>
             </h2>
             <p className="text-slate-300 text-lg mb-10">
-              UangCerdas bekerja 24/7 memantau setiap rupiah yang keluar masuk, menganalisis anomali, dan memberimu saran tindakan nyata untuk menyelamatkan profit.
+              SmartKas bekerja 24/7 memantau setiap rupiah yang keluar masuk, menganalisis anomali, dan memberimu saran tindakan nyata untuk menyelamatkan profit.
             </p>
 
             <div className="space-y-8">

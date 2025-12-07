@@ -35,14 +35,10 @@ export const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
           {/* Logo */}
-          <div className="flex items-center gap-2">
-            <div className="bg-emerald-600 p-1.5 rounded-lg">
-              <ShieldCheck className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-xl font-bold text-slate-800 tracking-tight">
-              UangCerdas
-            </span>
-          </div>
+          {/* Logo */}
+          <Link href="/">
+            <img src="/logo-all.png" alt="SmartKas" className="h-10 w-auto" />
+          </Link>
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center space-x-8">

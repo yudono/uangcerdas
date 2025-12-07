@@ -43,7 +43,7 @@ export const DashboardDemo: React.FC = () => {
           <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
           <div className="w-3 h-3 rounded-full bg-green-400"></div>
         </div>
-        <div className="text-xs font-medium text-slate-400">dashboard.uangcerdas.id</div>
+        <div className="text-xs font-medium text-slate-400">dashboard.smartkas.id</div>
         <div className="w-4"></div>
       </div>
 

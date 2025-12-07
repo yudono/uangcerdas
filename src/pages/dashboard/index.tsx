@@ -1,12 +1,20 @@
+
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 import { Button } from "../../components/Button";
 import { DashboardLayout } from "@/src/components/Dashboard";
 import { Transaction } from "@/types";
+import { useCurrency } from "@/src/hooks/useCurrency";
 import {
   ShieldCheck,
   TrendingUp,
   TrendingDown,
   RefreshCw,
   FileSpreadsheet,
+  AlertTriangle,
+  ArrowUpRight,
+  ArrowDownRight,
+  Wallet,
 } from "lucide-react";
 import {
   AreaChart,
@@ -58,7 +66,15 @@ const fetchInsight = async (): Promise<{ insight: string }> => {
   return res.json();
 };
 
+const fetchAnomalies = async (): Promise<any[]> => {
+  const res = await fetch('/api/cron/detect-anomalies'); // Or /api/alerts? Using detect-anomalies as per usage
+  if (!res.ok) throw new Error('Failed to fetch anomalies');
+  return res.json();
+};
+
 export default function DashboardPage() {
+  const { data: session } = useSession();
+  const router = useRouter();
   const queryClient = useQueryClient();
 
   const { data: transactions, isLoading: isLoadingTransactions } = useQuery<Transaction[]>({
@@ -78,21 +94,128 @@ export default function DashboardPage() {
     refetchOnWindowFocus: false,
   });
 
+  const { data: anomalies } = useQuery<any[]>({ // Fetch anomalies
+    queryKey: ["anomalies"],
+    queryFn: fetchAnomalies,
+    staleTime: 1000 * 60 * 10, // Cache for 10 minutes
+  });
+
   const syncDataMutation = useMutation({
     mutationFn: async () => {
       // Mock sync for now, or could re-fetch
       await queryClient.invalidateQueries({ queryKey: ["transactions"] });
       await queryClient.invalidateQueries({ queryKey: ["dashboardMetrics"] });
       await queryClient.invalidateQueries({ queryKey: ["dashboardInsight"] });
+      await queryClient.invalidateQueries({ queryKey: ["anomalies"] }); // Invalidate anomalies too
     },
     onSuccess: () => {
       // alert("Data Synced!");
     },
   });
 
+  const { formatCurrency } = useCurrency();
+
+  // Calculate totals from transactions (if metrics are not used directly)
+  const totalIncome = transactions
+    ?.filter((t: any) => t.type === "in")
+    .reduce((acc: number, curr: any) => acc + Number(curr.amount), 0) || 0;
+
+  const totalExpense = transactions
+    ?.filter((t: any) => t.type === "out")
+    .reduce((acc: number, curr: any) => acc + Number(curr.amount), 0) || 0;
+
+  const balance = totalIncome - totalExpense;
+
   return (
     <DashboardLayout>
       <div className="space-y-6 animate-in fade-in duration-500 pb-20">
+        {/* Welcome Section */}
+        <div className="flex justify-between items-end">
+          <div>
+            <h2 className="text-2xl font-bold text-slate-800">
+              Halo, {session?.user?.name || "Juragan"}! 👋
+            </h2>
+            <p className="text-slate-500">
+              Berikut ringkasan keuangan bisnismu hari ini.
+            </p>
+          </div>
+          <div className="hidden md:block">
+            <p className="text-sm text-slate-400 text-right">Saldo Saat Ini</p>
+            <p className="text-2xl font-bold text-emerald-600">
+              {formatCurrency(balance)}
+            </p>
+          </div>
+        </div>
+
+        {/* Anomaly Alert Banner */}
+        {anomalies && anomalies.length > 0 && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+            <div className="bg-amber-100 p-2 rounded-lg">
+              <AlertTriangle className="w-5 h-5 text-amber-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-bold text-amber-800">
+                Terdeteksi {anomalies.length} Anomali Baru
+              </h3>
+              <p className="text-sm text-amber-700 mt-1">
+                Sistem mendeteksi pola transaksi tidak biasa. Segera periksa untuk mencegah kebocoran.
+              </p>
+            </div>
+            <button
+              onClick={() => router.push('/dashboard/alerts')}
+              className="px-4 py-2 bg-white border border-amber-200 text-amber-700 text-sm font-medium rounded-lg hover:bg-amber-50 transition-colors"
+            >
+              Periksa
+            </button>
+          </div>
+        )}
+
+        {/* Cards Summary */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="bg-emerald-100 p-2 rounded-lg">
+                <TrendingUp className="w-5 h-5 text-emerald-600" />
+              </div>
+              <span className="text-slate-500 font-medium">Pemasukan</span>
+            </div>
+            <p className="text-2xl font-bold text-slate-800">
+              {formatCurrency(totalIncome)}
+            </p>
+            <p className="text-xs text-emerald-600 mt-1 flex items-center gap-1">
+              <ArrowUpRight size={12} /> +12% dari bulan lalu
+            </p>
+          </div>
+
+          <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="bg-red-100 p-2 rounded-lg">
+                <TrendingDown className="w-5 h-5 text-red-600" />
+              </div>
+              <span className="text-slate-500 font-medium">Pengeluaran</span>
+            </div>
+            <p className="text-2xl font-bold text-slate-800">
+              {formatCurrency(totalExpense)}
+            </p>
+            <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
+              <ArrowDownRight size={12} /> +5% dari bulan lalu
+            </p>
+          </div>
+
+          <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="bg-blue-100 p-2 rounded-lg">
+                <Wallet className="w-5 h-5 text-blue-600" />
+              </div>
+              <span className="text-slate-500 font-medium">Saldo Bersih</span>
+            </div>
+            <p className="text-2xl font-bold text-slate-800">
+              {formatCurrency(balance)}
+            </p>
+            <p className="text-xs text-slate-400 mt-1">Update real-time</p>
+          </div>
+        </div>
+
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h2 className="text-2xl font-bold text-slate-800">
@@ -228,6 +351,7 @@ export default function DashboardPage() {
               </div>
 
               <div className="pt-2">
+
                 <div className="flex justify-between text-sm font-bold mb-1">
                   <span className="text-emerald-700">
                     Sisa Kas (Net)

@@ -26,6 +26,7 @@ import {
   YAxis,
 } from "recharts";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useCurrency } from "@/src/hooks/useCurrency";
 import { z } from "zod";
 
 interface CashflowData {
@@ -41,7 +42,14 @@ const fetchCashflowPrediction = async (): Promise<CashflowData[]> => {
   return res.json();
 };
 
-export default function DashboardAlertPage() {
+const fetchReportData = async () => {
+  const res = await fetch('/api/dashboard/metrics');
+  if (!res.ok) throw new Error('Failed to fetch metrics');
+  return res.json();
+};
+
+export default function DashboardReportsPage() {
+  const { formatCurrency } = useCurrency();
   const { data: session, status } = useSession();
   const router = useRouter();
 
@@ -50,6 +58,11 @@ export default function DashboardAlertPage() {
   >({
     queryKey: ["cashflowPrediction"],
     queryFn: fetchCashflowPrediction,
+  });
+
+  const { data: reportData } = useQuery({
+    queryKey: ["reportMetrics"],
+    queryFn: fetchReportData,
   });
 
   const fetchAlerts = async (): Promise<AIAlert[]> => {
@@ -135,9 +148,9 @@ export default function DashboardAlertPage() {
                 <TrendingUp size={20} className="text-emerald-600" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-800">
-                  Prediksi Cashflow
-                </h3>
+                <p className="text-2xl font-bold text-blue-600">
+                {formatCurrency(reportData?.netCash || 0)}
+              </p>
                 <p className="text-xs text-slate-500">
                   Estimasi AI untuk bulan depan
                 </p>
@@ -160,7 +173,7 @@ export default function DashboardAlertPage() {
                     />
                     <Tooltip
                       cursor={{ fill: "transparent" }}
-                      formatter={(val) => `Rp ${Number(val).toLocaleString()}`}
+                      formatter={(value: any) => formatCurrency(value)}
                     />
                     <Bar dataKey="val" radius={[6, 6, 0, 0]} barSize={60}>
                       {cashflowData?.map((entry, index) => (
@@ -198,9 +211,9 @@ export default function DashboardAlertPage() {
                 <ShieldCheck size={20} className="text-blue-600" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-800">
-                  Efisiensi AI Guardian
-                </h3>
+                <p className="text-2xl font-bold text-red-600">
+                {formatCurrency(reportData?.totalExpense || 0)}
+              </p>
                 <p className="text-xs text-slate-500">
                   Dampak tindakan Anda terhadap profit
                 </p>
@@ -214,8 +227,8 @@ export default function DashboardAlertPage() {
                     Estimasi Penghematan (Resolved)
                   </p>
                   <p className="text-2xl font-bold text-emerald-600">
-                    {isLoadingAlerts ? "..." : formatCurrency(resolvedSavings)}
-                  </p>
+                {formatCurrency(reportData?.totalIncome || 0)}
+              </p>
                 </div>
                 <div className="h-10 w-10 bg-emerald-200 rounded-full flex items-center justify-center">
                   <TrendingUp className="text-emerald-700" size={20} />

@@ -9,7 +9,7 @@ export const Footer: React.FC = () => {
           <div className="col-span-1 md:col-span-1">
             <div className="flex items-center gap-2 mb-4">
               <ShieldCheck className="w-6 h-6 text-emerald-600" />
-              <span className="text-xl font-bold text-slate-900">UangCerdas</span>
+              <span className="text-xl font-bold text-slate-900">SmartKas</span>
             </div>
             <p className="text-slate-500 text-sm leading-relaxed">
               Membantu UMKM Indonesia naik kelas dengan manajemen keuangan berbasis Artificial Intelligence.
@@ -47,7 +47,7 @@ export const Footer: React.FC = () => {
         </div>
         
         <div className="border-t border-slate-100 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-slate-400">
-          <p>© 2024 UangCerdas Indonesia. All rights reserved.</p>
+          <p>© 2024 SmartKas Indonesia. All rights reserved.</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <a href="#" className="hover:text-slate-600">Privacy Policy</a>
             <a href="#" className="hover:text-slate-600">Terms of Service</a>

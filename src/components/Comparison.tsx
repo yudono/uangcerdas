@@ -15,16 +15,16 @@ export const Comparison: React.FC = () => {
     <section id="advantage" className="py-20 bg-slate-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-slate-900">Kenapa UangCerdas Beda?</h2>
+          <h2 className="text-3xl font-bold text-slate-900">Kenapa SmartKas Beda?</h2>
           <p className="mt-4 text-slate-600">Jangan sekedar mencatat, mulailah mengamankan.</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-100">
           <div className="grid grid-cols-3 bg-slate-900 text-white p-6 items-center">
-            <div className="font-semibold">Fitur</div>
+            <div className="font-bold text-emerald-600 mb-1">SmartKas</div>
             <div className="text-center text-slate-400 font-medium text-sm sm:text-base">Akuntansi Biasa</div>
             <div className="text-center font-bold text-emerald-400 text-lg flex items-center justify-center gap-2">
-               UangCerdas
+               SmartKas
             </div>
           </div>
           

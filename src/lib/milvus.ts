@@ -1,5 +1,6 @@
 import { MilvusClient, DataType } from "@zilliz/milvus2-sdk-node";
-import { HuggingFaceTransformersEmbeddings } from "@langchain/community/embeddings/huggingface_transformers";
+import { OpenAIEmbeddings } from "@langchain/openai";
+import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
 
 const MILVUS_URL = process.env.MILVUS_URL || "144.91.103.249:19530";
 const MILVUS_TOKEN = process.env.MILVUS_TOKEN;
@@ -12,10 +13,21 @@ export const milvusClient = new MilvusClient({
     token: MILVUS_TOKEN
 });
 
-// Initialize Embeddings
-const embeddings = new HuggingFaceTransformersEmbeddings({
-    model: "Xenova/all-MiniLM-L6-v2",
-});
+// Initialize Embeddings (Gemini or Kolosal)
+const googleKey = process.env.GOOGLE_API_KEY;
+
+const embeddings = googleKey
+    ? new GoogleGenerativeAIEmbeddings({
+        apiKey: googleKey,
+        modelName: "embedding-001",
+    })
+    : new OpenAIEmbeddings({
+        openAIApiKey: "dummy",
+        configuration: {
+            baseURL: "https://api.kolosal.ai/v1",
+        },
+        modelName: "nomic-ai/nomic-embed-text-v1.5",
+    });
 
 export async function ensureCollection() {
     const hasCollection = await milvusClient.hasCollection({
@@ -133,6 +145,106 @@ export async function searchTransactions(userId: string, query: string, limit = 
         filter: `user_id == "${userId}"`,
         limit: limit,
         output_fields: ["text", "metadata"],
+    });
+
+    return searchRes.results;
+}
+
+const CHAT_COLLECTION_NAME = "chat_history";
+
+export async function ensureChatCollection() {
+    const hasCollection = await milvusClient.hasCollection({
+        collection_name: CHAT_COLLECTION_NAME,
+    });
+
+    if (!hasCollection.value) {
+        await milvusClient.createCollection({
+            collection_name: CHAT_COLLECTION_NAME,
+            fields: [
+                {
+                    name: "id",
+                    description: "Message ID",
+                    data_type: DataType.VarChar,
+                    max_length: 64,
+                    is_primary_key: true,
+                },
+                {
+                    name: "user_id",
+                    description: "User ID",
+                    data_type: DataType.VarChar,
+                    max_length: 64,
+                },
+                {
+                    name: "role",
+                    description: "Role (user/assistant)",
+                    data_type: DataType.VarChar,
+                    max_length: 16,
+                },
+                {
+                    name: "content",
+                    description: "Message Content",
+                    data_type: DataType.VarChar,
+                    max_length: 8192, // Increased limit for longer messages
+                },
+                {
+                    name: "vector",
+                    description: "Content Embedding",
+                    data_type: DataType.FloatVector,
+                    dim: 384,
+                },
+                {
+                    name: "timestamp",
+                    description: "Timestamp",
+                    data_type: DataType.Int64,
+                },
+            ],
+        });
+
+        await milvusClient.createIndex({
+            collection_name: CHAT_COLLECTION_NAME,
+            field_name: "vector",
+            index_name: "chat_vector_index",
+            index_type: "IVF_FLAT",
+            metric_type: "L2",
+            params: { nlist: 1024 },
+        });
+
+        await milvusClient.loadCollectionSync({
+            collection_name: CHAT_COLLECTION_NAME,
+        });
+    }
+}
+
+export async function upsertMessage(userId: string, role: 'user' | 'assistant', content: string) {
+    await ensureChatCollection();
+
+    const vector = await embeddings.embedQuery(content);
+    const id = `${Date.now()}-${Math.random().toString(36).substring(7)}`;
+
+    await milvusClient.upsert({
+        collection_name: CHAT_COLLECTION_NAME,
+        fields_data: [{
+            id,
+            user_id: userId,
+            role,
+            content,
+            vector,
+            timestamp: Date.now(),
+        }],
+    });
+}
+
+export async function searchChatHistory(userId: string, query: string, limit = 5) {
+    await ensureChatCollection();
+
+    const vector = await embeddings.embedQuery(query);
+
+    const searchRes = await milvusClient.search({
+        collection_name: CHAT_COLLECTION_NAME,
+        data: vector,
+        filter: `user_id == "${userId}"`,
+        limit: limit,
+        output_fields: ["role", "content", "timestamp"],
     });
 
     return searchRes.results;

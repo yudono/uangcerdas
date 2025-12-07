@@ -109,7 +109,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             <div className="bg-emerald-600 p-1.5 rounded-lg">
               <ShieldCheck className="w-5 h-5 text-white" />
             </div>
-            <span className="text-lg font-bold text-slate-800">UangCerdas</span>
+            <span className="text-lg font-bold text-slate-800">SmartKas</span>
           </div>
           <button
             onClick={onClose}
@@ -221,7 +221,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
           {step === 1 && (
             <p className="text-xs text-center text-slate-400 mt-6">
-              Dengan masuk, Anda menyetujui Syarat & Ketentuan UangCerdas.
+              Dengan masuk, Anda menyetujui Syarat & Ketentuan SmartKas.
             </p>
           )}
         </div>

@@ -12,11 +12,13 @@ import {
 import { useEffect, useState } from "react";
 import { formatCurrency } from "../../lib/format-currency";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCurrency } from "@/src/hooks/useCurrency";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function DashboardAlertPage() {
+  const { formatCurrency } = useCurrency();
   const queryClient = useQueryClient();
   const [expandedAlert, setExpandedAlert] = useState<string | null>(null);
 
@@ -46,37 +48,33 @@ export default function DashboardAlertPage() {
       id: string;
       status: "in_progress" | "resolved";
     }) => {
-      // In a real app, you would call an API here
-      // await fetch(`/api/alerts/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) });
-      
-      // For now, we'll optimistically update the UI since we don't have a specific update endpoint yet
-      // Or we can assume the cron job handles status updates based on actions? 
-      // Let's stick to local state update simulation for now as requested, but ideally we need an endpoint.
-      
-      return new Promise<AIAlert>((resolve) => {
-        setTimeout(() => {
-          const updatedAlerts = alerts?.map((a) =>
-            a.id === id ? { ...a, status } : a
-          );
-          queryClient.setQueryData(["alerts"], updatedAlerts);
-          resolve(updatedAlerts?.find((a) => a.id === id)!);
-        }, 300);
+      const res = await fetch(`/api/alerts/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
       });
+
+      if (!res.ok) throw new Error('Failed to update alert status');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["alerts"] });
     },
   });
 
   const updateAlertNoteMutation = useMutation({
     mutationFn: async ({ id, note }: { id: string; note: string }) => {
-      // Simulate API call
-      return new Promise<AIAlert>((resolve) => {
-        setTimeout(() => {
-          const updatedAlerts = alerts?.map((a) =>
-            a.id === id ? { ...a, userNotes: note } : a
-          );
-          queryClient.setQueryData(["alerts"], updatedAlerts);
-          resolve(updatedAlerts?.find((a) => a.id === id)!);
-        }, 300);
+      const res = await fetch(`/api/alerts/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userNotes: note }),
       });
+
+      if (!res.ok) throw new Error('Failed to update alert note');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["alerts"] });
     },
   });
 
@@ -218,6 +216,9 @@ export default function DashboardAlertPage() {
                       <span className="text-xs font-medium text-slate-400">
                         {alert.date}
                       </span>
+                      <div className="mt-2 text-sm font-bold text-slate-800">
+                      Nilai Transaksi: {formatCurrency(alert.amount)}
+                    </div>
                       {expandedAlert === alert.id ? (
                         <ChevronDown size={18} className="text-slate-400" />
                       ) : (

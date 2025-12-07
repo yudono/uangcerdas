@@ -18,7 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         try {
-            const response = await processChat(session.user.id, message, history || []);
+            const response = await processChat(session.user.id, message);
             return res.status(200).json({ text: response });
         } catch (error) {
             console.error('Error processing chat:', error);
