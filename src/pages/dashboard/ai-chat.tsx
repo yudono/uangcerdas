@@ -242,7 +242,7 @@ export default function ChatPage() {
               onChange={handleImageSelect}
             />
 
-            <div className="flex-1 relative">
+            <div className="flex-1 relative flex items-center gap-2">
               <textarea
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
@@ -274,9 +274,9 @@ export default function ChatPage() {
             <Button
               onClick={handleSendMessage}
               disabled={(!inputText.trim() && !selectedImage) || isSending || isRecording || isTranscribing}
-              className="rounded-full w-12 h-12 flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 p-0 flex-shrink-0"
+              className="rounded-full w-12 h-12 flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 !p-0 flex-shrink-0"
             >
-              <Send size={20} className="ml-0.5" />
+              <Send size={18} className="ml-0.5 text-white fill-white stroke-white" />
             </Button>
           </div>
         </div>

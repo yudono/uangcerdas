@@ -2,7 +2,8 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { prisma } from '@/src/lib/prisma';
 import { authOptions } from '@/src/lib/auth';
-import { AIService } from '@/src/lib/ai-service';
+import { llm } from '@/src/lib/ai';
+import { SystemMessage, HumanMessage } from "@langchain/core/messages";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== 'GET') {
@@ -59,10 +60,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         const prompt = `Analyze this financial summary for a small business: "${summary}". Provide a concise, friendly, and actionable insight (max 2 sentences) in Indonesian language about their financial health or spending.`;
 
-        const insight = await AIService.chatCompletion([
-            { role: "system", content: "You are a helpful financial assistant for small businesses." },
-            { role: "user", content: prompt }
-        ], "meta-llama/llama-4-maverick-17b-128e-instruct", 150);
+        const response = await llm.invoke([
+            new SystemMessage("You are a helpful financial assistant for small businesses."),
+            new HumanMessage(prompt)
+        ]);
+
+        const insight = typeof response.content === 'string' ? response.content : JSON.stringify(response.content);
 
         return res.status(200).json({ insight });
 

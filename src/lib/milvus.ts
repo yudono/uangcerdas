@@ -13,21 +13,16 @@ export const milvusClient = new MilvusClient({
     token: MILVUS_TOKEN
 });
 
-// Initialize Embeddings (Gemini or Kolosal)
-const googleKey = process.env.GOOGLE_API_KEY;
+// Initialize Embeddings
+// Kolosal API doesn't list embedding models, so we fallback to Gemini for embeddings.
+const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
 
-const embeddings = googleKey
-    ? new GoogleGenerativeAIEmbeddings({
-        apiKey: googleKey,
-        modelName: "embedding-001",
-    })
-    : new OpenAIEmbeddings({
-        openAIApiKey: "dummy",
-        configuration: {
-            baseURL: "https://api.kolosal.ai/v1",
-        },
-        modelName: "nomic-ai/nomic-embed-text-v1.5",
-    });
+console.log("Milvus Service: Using Gemini Embeddings");
+
+let embeddings = new GoogleGenerativeAIEmbeddings({
+    apiKey: geminiKey,
+    modelName: "embedding-001",
+});
 
 export async function ensureCollection() {
     const hasCollection = await milvusClient.hasCollection({
@@ -218,20 +213,28 @@ export async function ensureChatCollection() {
 export async function upsertMessage(userId: string, role: 'user' | 'assistant', content: string) {
     await ensureChatCollection();
 
-    const vector = await embeddings.embedQuery(content);
-    const id = `${Date.now()}-${Math.random().toString(36).substring(7)}`;
+    console.log(`Upserting message for user ${userId}, role ${role}`);
+    try {
+        const vector = await embeddings.embedQuery(content);
+        console.log("Embedding generated successfully");
+        const id = `${Date.now()}-${Math.random().toString(36).substring(7)}`;
 
-    await milvusClient.upsert({
-        collection_name: CHAT_COLLECTION_NAME,
-        fields_data: [{
-            id,
-            user_id: userId,
-            role,
-            content,
-            vector,
-            timestamp: Date.now(),
-        }],
-    });
+        await milvusClient.upsert({
+            collection_name: CHAT_COLLECTION_NAME,
+            fields_data: [{
+                id,
+                user_id: userId,
+                role,
+                content,
+                vector,
+                timestamp: Date.now(),
+            }],
+        });
+        console.log("Message upserted to Milvus");
+    } catch (error) {
+        console.error("Error in upsertMessage:", error);
+        throw error;
+    }
 }
 
 export async function searchChatHistory(userId: string, query: string, limit = 5) {

@@ -29,20 +29,13 @@ async function main() {
             token: MILVUS_TOKEN
         });
 
-        const googleKey = process.env.GOOGLE_API_KEY;
-        embeddings = googleKey
-            ? new GoogleGenerativeAIEmbeddings({
-                apiKey: googleKey,
-                modelName: "embedding-001",
-            })
-            : new OpenAIEmbeddings({
-                openAIApiKey: "dummy",
-                configuration: {
-                    baseURL: "https://api.kolosal.ai/v1",
-                },
-                modelName: "nomic-ai/nomic-embed-text-v1.5",
-            });
-        console.log(`Milvus client initialized with ${googleKey ? "Gemini" : "Kolosal"} embeddings.`);
+        const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+
+        embeddings = new GoogleGenerativeAIEmbeddings({
+            apiKey: geminiKey,
+            modelName: "embedding-001",
+        });
+        console.log("Milvus client initialized with Gemini embeddings.");
     } catch (err) {
         console.error("Error initializing Milvus:", err);
         console.warn("Failed to initialize Milvus client. Seeding will proceed without vector sync.");

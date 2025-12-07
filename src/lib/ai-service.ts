@@ -1,4 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { llm } from './ai';
+import { HumanMessage, SystemMessage, AIMessage } from "@langchain/core/messages";
 
 // Types
 interface OCRProductResponse {
@@ -132,30 +134,21 @@ export class AIService {
         return data;
     }
 
-    // Kolosal Chat
-    static async chatCompletion(messages: ChatMessage[], model = "meta-llama/llama-4-maverick-17b-128e-instruct", maxTokens = 500, temperature = 0.7) {
-        const response = await fetch('https://api.kolosal.ai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${this.getKolosalKey()}`
-            },
-            body: JSON.stringify({
-                model,
-                messages,
-                max_tokens: maxTokens,
-                temperature
-            })
-        });
+    // Centralized Chat Completion using llm from lib/ai
+    static async chatCompletion(messages: ChatMessage[]) {
+        try {
+            const langchainMessages = messages.map(m => {
+                if (m.role === 'system') return new SystemMessage(m.content as string);
+                if (m.role === 'user') return new HumanMessage(m.content as string);
+                return new AIMessage(m.content as string);
+            });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error("Kolosal Chat Error:", errorText);
-            throw new Error(`Chat Request Failed: ${response.status}`);
+            const response = await llm.invoke(langchainMessages);
+            return typeof response.content === 'string' ? response.content : JSON.stringify(response.content);
+        } catch (error) {
+            console.error("AI Chat Error:", error);
+            throw new Error("Failed to generate AI response");
         }
-
-        const data = await response.json();
-        return data.choices?.[0]?.message?.content || "";
     }
 
     // Gemini STT
@@ -198,7 +191,7 @@ export class AIService {
         const response = await this.chatCompletion([
             { role: 'system', content: 'You are a financial fraud detection expert.' },
             { role: 'user', content: prompt }
-        ], "meta-llama/llama-4-maverick-17b-128e-instruct", 1000, 0.1);
+        ]);
 
         try {
             // Extract JSON from response
