@@ -8,10 +8,10 @@ export class AnomalyService {
         // Fetch top 5 businesses that haven't been checked in the last 24 hours
         const businesses = await prisma.business.findMany({
             where: {
-                OR: [
-                    { lastAnomalyCheck: null },
-                    { lastAnomalyCheck: { lt: new Date(Date.now() - 24 * 60 * 60 * 1000) } }
-                ]
+                // OR: [
+                //     { lastAnomalyCheck: null },
+                //     { lastAnomalyCheck: { lt: new Date(Date.now() - 24 * 60 * 60 * 1000) } }
+                // ]
             },
             take: 5, // Process only 5 at a time to avoid timeouts
             include: {
@@ -40,9 +40,12 @@ export class AnomalyService {
             // Predict anomalies (scores)
             const scores = forest.scores();
 
+            console.log(`Business ${business.id}: ${scores.length} transactions processed.`);
+            console.log('Anomaly Scores:', scores.slice(0, 10)); // Log first 10 scores
+
             // Filter transactions with high anomaly scores (e.g., top 5% or threshold)
             // Isolation Forest scores are usually between 0 and 1. Closer to 1 is more anomalous.
-            const threshold = 0.6; // Adjust based on sensitivity
+            const threshold = 0.5; // Lowered to 0.5 to catch more potential anomalies
 
             const anomalousIndices = scores
                 .map((score, index) => ({ score, index }))
